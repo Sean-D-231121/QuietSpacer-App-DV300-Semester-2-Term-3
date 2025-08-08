@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
@@ -14,9 +14,19 @@ import Bookmarks from "./screens/BookmarkScreen";
 
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
-
+import { logout } from "./services/authService";
+import "react-native-gesture-handler"; // top of file
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
+
+function SignOutScreen() {
+  useEffect(() => {
+    logout();
+  }, []);
+
+  return <View />;
+}
 
 function DrawerNavigator() {
   return (
@@ -25,6 +35,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="Bookmarks" component={Bookmarks} />
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Place Details" component={PlaceDetails} />
+      <Drawer.Screen name="Sign Out" component={SignOutScreen} />
     </Drawer.Navigator>
   );
 }
@@ -45,6 +56,10 @@ export default function App() {
   }, []);
 
   return (
+    
+
+
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <NavigationContainer>
       {isLoggedIn ? (
         <DrawerNavigator />
@@ -56,6 +71,7 @@ export default function App() {
       )}
       <StatusBar style="auto" />
     </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 

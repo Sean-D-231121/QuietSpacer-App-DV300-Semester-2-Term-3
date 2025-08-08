@@ -11,9 +11,22 @@ import {
   Platform,
   Modal,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
-import { FontAwesome, Entypo, Feather } from "@expo/vector-icons";
+import MapView, { Marker, Callout} from "react-native-maps";
+import { Entypo, Feather } from "@expo/vector-icons";
 import * as Location from "expo-location";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
+
+
+type MarkerData = {
+  id: number;
+  latitude: number;
+  longitude: number;
+  title: string;
+};
 
 const HomeScreen = () => {
   const [region, setRegion] = useState({
@@ -26,31 +39,81 @@ const HomeScreen = () => {
   const [locationGranted, setLocationGranted] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [placeName, setPlaceName] = useState("");
+  const [customMarkers, setCustomMarkers] = useState<MarkerData[]>([]);
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
+  const [rating, setRating] = useState<number>(0);
 
-  const markers = [
+  const [selectedCoords, setSelectedCoords] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
+  // Existing static markers
+  const predefinedMarkers = [
     { id: 1, latitude: -25.7545, longitude: 28.2314 },
     { id: 2, latitude: -25.7555, longitude: 28.229 },
     { id: 3, latitude: -25.753, longitude: 28.233 },
   ];
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
-      }
-      setLocationGranted(true);
+  (async () => {
+    if (region.latitude !== 0 && region.longitude !== 0) return; // Prevent re-run
+    
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      console.log("Permission to access location was denied");
+      return;
+    }
+    setLocationGranted(true);
 
-      let location = await Location.getCurrentPositionAsync({});
-      setRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
-    })();
-  }, []);
+    let location = await Location.getCurrentPositionAsync({});
+    setRegion({
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+  })();
+}, []);
+
+
+  const handleLongPress = (event: any) => {
+    const coords = event.nativeEvent.coordinate;
+    setSelectedCoords(coords);
+    setModalVisible(true);
+  };
+
+  const [markerId, setMarkerId] = useState(1);
+
+  const saveMarker = () => {
+    if (selectedCoords && placeName.trim() !== "") {
+      const newMarker = {
+        id: markerId,
+        latitude: selectedCoords.latitude,
+        longitude: selectedCoords.longitude,
+        title: placeName,
+      };
+      setCustomMarkers((prev) => [...prev, newMarker]);
+      setMarkerId(markerId + 1);
+    }
+    setPlaceName("");
+    setSelectedCoords(null);
+    setModalVisible(false);
+  };
+  const [toolbarExpanded, setToolbarExpanded] = useState(false);
+const sheetHeight = useSharedValue(70); // Initial collapsed height
+
+const animatedSheetStyle = useAnimatedStyle(() => {
+  return {
+    height: withTiming(sheetHeight.value, { duration: 300 }),
+  };
+});
+
+const toggleToolbar = () => {
+  setToolbarExpanded(!toolbarExpanded);
+  sheetHeight.value = toolbarExpanded ? 70 : 250; // Toggle between collapsed and expanded
+};
 
   return (
     <KeyboardAvoidingView
@@ -62,9 +125,10 @@ const HomeScreen = () => {
           style={StyleSheet.absoluteFillObject}
           region={region}
           showsUserLocation
-         
+          onLongPress={handleLongPress} // Long press to add marker
         >
-          {markers.map((marker) => (
+          {/* Predefined markers */}
+          {predefinedMarkers.map((marker) => (
             <Marker
               key={marker.id}
               coordinate={{
@@ -77,6 +141,37 @@ const HomeScreen = () => {
                 source={require("../assets/Pin.png")}
                 style={styles.pinIcon}
               />
+            </Marker>
+          ))}
+
+          {/* Custom markers */}
+          {customMarkers.map((marker) => (
+            <Marker
+              key={marker.id}
+              coordinate={{
+                latitude: marker.latitude,
+                longitude: marker.longitude,
+              }}
+              title={marker.title}
+            >
+              <Image
+                source={require("../assets/Pin.png")}
+                style={styles.pinIcon}
+              />
+              <Callout>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedMarker(marker);
+                    setDetailsModalVisible(true);
+                  }}
+                  style={{ padding: 5 }}
+                >
+                  <Text style={{ fontWeight: "bold" }}>{marker.title}</Text>
+                  <Text style={{ color: "#007AFF", marginTop: 4 }}>
+                    View Details
+                  </Text>
+                </TouchableOpacity>
+              </Callout>
             </Marker>
           ))}
         </MapView>
@@ -94,8 +189,6 @@ const HomeScreen = () => {
           style={styles.searchInput}
           placeholderTextColor="#333"
         />
-
-        {/* Add Place Button */}
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setModalVisible(true)}
@@ -115,18 +208,48 @@ const HomeScreen = () => {
               value={placeName}
               onChangeText={setPlaceName}
             />
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                console.log("Place added:", placeName);
-                setPlaceName("");
-                setModalVisible(false);
-              }}
-            >
+            <TouchableOpacity style={styles.modalButton} onPress={saveMarker}>
               <Text style={styles.modalButtonText}>Save</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Text style={{ color: "#999", marginTop: 10 }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      <Modal visible={detailsModalVisible} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {selectedMarker?.title || "Place Details"}
+            </Text>
+
+            <Text style={{ marginBottom: 10 }}>Rate this place:</Text>
+            <View style={{ flexDirection: "row", marginBottom: 20 }}>
+              {[1, 2, 3, 4, 5].map((num) => (
+                <TouchableOpacity
+                  key={num}
+                  onPress={() => setRating(num)}
+                  style={[
+                    styles.starButton,
+                    rating >= num && styles.selectedStarButton,
+                  ]}
+                >
+                  <Text style={{ color: rating >= num ? "#fff" : "#000" }}>
+                    {num}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setDetailsModalVisible(false);
+                setRating(0);
+              }}
+            >
+              <Text style={styles.modalButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -136,6 +259,7 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -216,5 +340,18 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  starButton: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    backgroundColor: "#eee",
+  },
+
+  selectedStarButton: {
+    backgroundColor: "#455A64",
+    borderColor: "#455A64",
   },
 });
