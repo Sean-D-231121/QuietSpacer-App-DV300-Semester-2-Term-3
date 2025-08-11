@@ -1,15 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   Image,
   StyleSheet,
-  FlatList,
   ScrollView,
+  TouchableOpacity,
+  TextInput,
 } from "react-native";
 import * as Progress from "react-native-progress";
 
-const profileData = {
+const initialProfileData = {
   username: "Elnacho52",
   bio: "I’m a curious and creative thinker who enjoys exploring new ideas and solving problems in unique ways. I have a passion for technology and design, and I love building things that make life easier for others.",
   profilePic: "https://placekitten.com/200/200",
@@ -69,7 +70,35 @@ const profileData = {
   ],
 };
 
+const moodOptions = [
+  "😌 Calm",
+  "😃 Happy",
+  "😔 Sad",
+  "😡 Angry",
+  "😴 Tired",
+  "🤩 Excited",
+];
+
 const ProfileScreen = () => {
+  const [profileData, setProfileData] = useState(initialProfileData);
+  const [selectedMood, setSelectedMood] = useState("");
+  const [moodDescription, setMoodDescription] = useState("");
+
+  const addMoodLog = () => {
+    if (!selectedMood) return;
+    const newLog = {
+      mood: selectedMood,
+      description: moodDescription || "No description provided.",
+      time: "Just now",
+    };
+    setProfileData((prev) => ({
+      ...prev,
+      moodHistory: [newLog, ...prev.moodHistory],
+    }));
+    setSelectedMood("");
+    setMoodDescription("");
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Image
@@ -118,6 +147,32 @@ const ProfileScreen = () => {
           </View>
         </View>
       ))}
+
+      {/* Mood Input Section */}
+      <Text style={styles.label}>Add Current Mood</Text>
+      <View style={styles.moodOptions}>
+        {moodOptions.map((m, i) => (
+          <TouchableOpacity
+            key={i}
+            style={[
+              styles.moodOption,
+              selectedMood === m && { backgroundColor: "#FFD6A5" },
+            ]}
+            onPress={() => setSelectedMood(m)}
+          >
+            <Text style={styles.moodText}>{m}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Describe your mood..."
+        value={moodDescription}
+        onChangeText={setMoodDescription}
+      />
+      <TouchableOpacity style={styles.saveBtn} onPress={addMoodLog}>
+        <Text style={styles.saveBtnText}>Save Mood</Text>
+      </TouchableOpacity>
 
       <Text style={styles.label}>Recent Mood Logs</Text>
       {profileData.moodHistory.map((entry, index) => (
@@ -195,6 +250,41 @@ const styles = StyleSheet.create({
   placeName: {
     fontWeight: "600",
     marginBottom: 4,
+  },
+  moodOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 10,
+  },
+  moodOption: {
+    backgroundColor: "#FFF",
+    padding: 8,
+    borderRadius: 8,
+    margin: 4,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  moodText: {
+    fontSize: 18,
+  },
+  input: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  saveBtn: {
+    backgroundColor: "#FFB5A7",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  saveBtnText: {
+    fontWeight: "bold",
+    color: "#333",
   },
   moodLog: {
     backgroundColor: "#D0F4DE",

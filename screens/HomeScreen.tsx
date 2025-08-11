@@ -1,4 +1,3 @@
-// HomeScreen.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -10,73 +9,118 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  ActivityIndicator,
 } from "react-native";
-import MapView, { Marker, Callout} from "react-native-maps";
-import { Entypo, Feather } from "@expo/vector-icons";
+import MapView, { Marker} from "react-native-maps";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { Feather } from "@expo/vector-icons";
+import { addPlaceToFirestore, getAllPlacesFromFirestore } from "../services/DbService";
 import * as Location from "expo-location";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
-
+import * as ImagePicker from "expo-image-picker";
 
 type MarkerData = {
   id: number;
   latitude: number;
   longitude: number;
-  title: string;
+  title?: string;
+  name?: string;
+};
+
+type RootStackParamList = {
+  "Place Details": { marker: MarkerData };
 };
 
 const HomeScreen = () => {
-  const [region, setRegion] = useState({
-    latitude: 0,
-    longitude: 0,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  });
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [region, setRegion] = useState<null | {
+    latitude: number;
+    longitude: number;
+    latitudeDelta: number;
+    longitudeDelta: number;
+  }>(null);
 
-  const [locationGranted, setLocationGranted] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [placeName, setPlaceName] = useState("");
-  const [customMarkers, setCustomMarkers] = useState<MarkerData[]>([]);
-  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
-  const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
-  const [rating, setRating] = useState<number>(0);
-
+  const [placePrice, setPlacePrice] = useState("");
+  const [placeDescription, setPlaceDescription] = useState("");
+  const [placeCategory, setPlaceCategory] = useState("");
+  const [customMarkers, setCustomMarkers] = useState<any[]>([]);
   const [selectedCoords, setSelectedCoords] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [markerId, setMarkerId] = useState(100);
+  const [placeImage, setPlaceImage] = useState<string>("");
+  const [dbMarkers, setDbMarkers] = useState<any[]>([]);
 
-  // Existing static markers
+  // Modal state for marker details
+  const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  // Predefined markers
   const predefinedMarkers = [
-    { id: 1, latitude: -25.7545, longitude: 28.2314 },
-    { id: 2, latitude: -25.7555, longitude: 28.229 },
-    { id: 3, latitude: -25.753, longitude: 28.233 },
+    {
+      id: 1,
+      latitude: -25.7545,
+      longitude: 28.2314,
+      title: "Botanical Garden",
+    },
+    { id: 2, latitude: -25.7555, longitude: 28.229, title: "Calm Park" },
+    { id: 3, latitude: -25.753, longitude: 28.233, title: "Quiet Spot" },
   ];
 
-  useEffect(() => {
-  (async () => {
-    if (region.latitude !== 0 && region.longitude !== 0) return; // Prevent re-run
-    
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      console.log("Permission to access location was denied");
-      return;
+  // Search state and ref for MapView
+  const [search, setSearch] = useState("");
+  const mapRef = React.useRef<MapView>(null);
+
+  // Search handler: only search Firestore pins
+  const handleSearch = () => {
+    const found = dbMarkers.find(
+      (m) =>
+        (m.title || m.name || "").toLowerCase().includes(search.toLowerCase())
+    );
+    if (found && mapRef.current) {
+      // Firestore pins use lat/long
+      mapRef.current.animateToRegion(
+        {
+          latitude: found.lat,
+          longitude: found.long,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        800
+      );
+      setSelectedMarker(found);
+      setDetailsModalVisible(true);
+    } else {
+      alert("No Firestore pin found matching your search.");
     }
-    setLocationGranted(true);
+  };
 
-    let location = await Location.getCurrentPositionAsync({});
-    setRegion({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
-  })();
-}, []);
-
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setLoading(false);
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+      setRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+      // Fetch places from Firestore
+      const result = await getAllPlacesFromFirestore();
+      if (result.success) {
+        setDbMarkers(result.places || []);
+      } else {
+        setDbMarkers([]);
+      }
+      setLoading(false);
+    })();
+  }, []);
 
   const handleLongPress = (event: any) => {
     const coords = event.nativeEvent.coordinate;
@@ -84,103 +128,179 @@ const HomeScreen = () => {
     setModalVisible(true);
   };
 
-  const [markerId, setMarkerId] = useState(1);
-
-  const saveMarker = () => {
+  const saveMarker = async () => {
     if (selectedCoords && placeName.trim() !== "") {
       const newMarker = {
         id: markerId,
         latitude: selectedCoords.latitude,
         longitude: selectedCoords.longitude,
         title: placeName,
+        price: placePrice,
+        description: placeDescription,
+        category: placeCategory,
+        image_url: placeImage,
       };
       setCustomMarkers((prev) => [...prev, newMarker]);
       setMarkerId(markerId + 1);
+      const result = await addPlaceToFirestore({
+        name: placeName,
+        description: placeDescription,
+        price: placePrice,
+        lat: selectedCoords.latitude,
+        long: selectedCoords.longitude,
+        category_name: placeCategory,
+        image_url: placeImage,
+      });
+      if (result.success) {
+        alert("Place saved to database!");
+      } else {
+        alert(
+          "Error saving place: " +
+            (typeof result.error === "object" && result.error !== null && "message" in result.error
+              ? (result.error as { message: string }).message
+              : String(result.error))
+        );
+        console.error(result.error);
+      }
+    } else {
+      alert("Please fill in all required fields and select a location.");
     }
     setPlaceName("");
+    setPlacePrice("");
+    setPlaceDescription("");
+    setPlaceCategory("");
+    setPlaceImage("");
     setSelectedCoords(null);
     setModalVisible(false);
   };
-  const [toolbarExpanded, setToolbarExpanded] = useState(false);
-const sheetHeight = useSharedValue(70); // Initial collapsed height
 
-const animatedSheetStyle = useAnimatedStyle(() => {
-  return {
-    height: withTiming(sheetHeight.value, { duration: 300 }),
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setPlaceImage(result.assets[0].uri);
+    }
   };
-});
 
-const toggleToolbar = () => {
-  setToolbarExpanded(!toolbarExpanded);
-  sheetHeight.value = toolbarExpanded ? 70 : 250; // Toggle between collapsed and expanded
-};
+  if (loading || !region) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#455A64" />
+        <Text style={{ marginTop: 10 }}>Loading map...</Text>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      {region && (
-        <MapView
-          style={StyleSheet.absoluteFillObject}
-          region={region}
-          showsUserLocation
-          onLongPress={handleLongPress} // Long press to add marker
-        >
-          {/* Predefined markers */}
-          {predefinedMarkers.map((marker) => (
-            <Marker
-              key={marker.id}
-              coordinate={{
-                latitude: marker.latitude,
-                longitude: marker.longitude,
-              }}
-              title={`Location ${marker.id}`}
-            >
-              <Image
-                source={require("../assets/Pin.png")}
-                style={styles.pinIcon}
-              />
-            </Marker>
-          ))}
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFillObject}
+        initialRegion={region}
+        showsUserLocation
+        onLongPress={handleLongPress}
+      >
+        {/* Predefined markers */}
+        {predefinedMarkers.map((marker) => (
+          <Marker
+            key={marker.id}
+            coordinate={{
+              latitude: marker.latitude,
+              longitude: marker.longitude,
+            }}
+            title={marker.title}
+            onPress={() => {
+              setSelectedMarker(marker);
+              setDetailsModalVisible(true);
+            }}
+          >
+            <Image
+              source={require("../assets/Pin.png")}
+              style={styles.pinIcon}
+            />
+          </Marker>
+        ))}
+        {/* Custom markers */}
+        {customMarkers.map((marker) => (
+          <Marker
+            key={marker.id}
+            coordinate={{
+              latitude: marker.latitude,
+              longitude: marker.longitude,
+            }}
+            title={marker.title}
+            onPress={() => {
+              setSelectedMarker(marker);
+              setDetailsModalVisible(true);
+            }}
+          >
+            <Image source={require("../assets/Pin.png")} style={styles.pinIcon} />
+          </Marker>
+        ))}
+        {/* Firestore markers */}
+        {dbMarkers.map((marker) => (
+          <Marker
+            key={marker.id}
+            coordinate={{
+              latitude: marker.lat,
+              longitude: marker.long,
+            }}
+            title={marker.title || marker.name}
+            onPress={() => {
+              setSelectedMarker(marker);
+              setDetailsModalVisible(true);
+            }}
+          >
+            <Image source={require("../assets/Pin.png")} style={styles.pinIcon} />
+          </Marker>
+        ))}
+      </MapView>
 
-          {/* Custom markers */}
-          {customMarkers.map((marker) => (
-            <Marker
-              key={marker.id}
-              coordinate={{
-                latitude: marker.latitude,
-                longitude: marker.longitude,
+      {/* Marker Details Modal */}
+      <Modal
+        visible={detailsModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setDetailsModalVisible(false)}
+      >
+        <View style={styles.detailsModalContainer}>
+          <View style={styles.detailsModalContent}>
+            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}>
+              {typeof selectedMarker?.title === 'string' && selectedMarker.title.trim() !== ''
+                ? selectedMarker.title
+                : typeof selectedMarker?.name === 'string' && selectedMarker.name.trim() !== ''
+                ? selectedMarker.name
+                : 'Untitled'}
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setDetailsModalVisible(false);
+                if (selectedMarker) {
+                  navigation.navigate("Place Details", { marker: selectedMarker });
+                }
               }}
-              title={marker.title}
             >
-              <Image
-                source={require("../assets/Pin.png")}
-                style={styles.pinIcon}
-              />
-              <Callout>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSelectedMarker(marker);
-                    setDetailsModalVisible(true);
-                  }}
-                  style={{ padding: 5 }}
-                >
-                  <Text style={{ fontWeight: "bold" }}>{marker.title}</Text>
-                  <Text style={{ color: "#007AFF", marginTop: 4 }}>
-                    View Details
-                  </Text>
-                </TouchableOpacity>
-              </Callout>
-            </Marker>
-          ))}
-        </MapView>
-      )}
-
-      {/* Hamburger Menu */}
-      <TouchableOpacity style={styles.menuButton}>
-        <Entypo name="menu" size={28} color="white" />
-      </TouchableOpacity>
+              <Text style={styles.modalButtonText}>View Details</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
+              <Text style={{ color: "#999", marginTop: 10 }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Search Bar */}
       <View style={styles.searchBarContainer}>
@@ -188,7 +308,16 @@ const toggleToolbar = () => {
           placeholder="Where to?"
           style={styles.searchInput}
           placeholderTextColor="#333"
+          value={search}
+          onChangeText={setSearch}
+          returnKeyType="search"
         />
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={handleSearch}
+        >
+          <Feather name="search" size={20} color="#fff" />
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setModalVisible(true)}
@@ -208,48 +337,37 @@ const toggleToolbar = () => {
               value={placeName}
               onChangeText={setPlaceName}
             />
+            <TextInput
+              placeholder="Price (e.g. 0 or 50)"
+              style={styles.modalInput}
+              value={placePrice}
+              onChangeText={setPlacePrice}
+              keyboardType="numeric"
+            />
+            <TextInput
+              placeholder="Description"
+              style={[styles.modalInput, { height: 60 }]}
+              value={placeDescription}
+              onChangeText={setPlaceDescription}
+              multiline
+            />
+            <TextInput
+              placeholder="Category (e.g. lake, dam, restaurant)"
+              style={styles.modalInput}
+              value={placeCategory}
+              onChangeText={setPlaceCategory}
+            />
+            <TouchableOpacity style={styles.modalButton} onPress={pickImage}>
+              <Text style={styles.modalButtonText}>Select Photo</Text>
+            </TouchableOpacity>
+            {placeImage ? (
+              <Image source={{ uri: placeImage }} style={{ width: 80, height: 80, marginBottom: 10, borderRadius: 10 }} />
+            ) : null}
             <TouchableOpacity style={styles.modalButton} onPress={saveMarker}>
               <Text style={styles.modalButtonText}>Save</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Text style={{ color: "#999", marginTop: 10 }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-      <Modal visible={detailsModalVisible} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {selectedMarker?.title || "Place Details"}
-            </Text>
-
-            <Text style={{ marginBottom: 10 }}>Rate this place:</Text>
-            <View style={{ flexDirection: "row", marginBottom: 20 }}>
-              {[1, 2, 3, 4, 5].map((num) => (
-                <TouchableOpacity
-                  key={num}
-                  onPress={() => setRating(num)}
-                  style={[
-                    styles.starButton,
-                    rating >= num && styles.selectedStarButton,
-                  ]}
-                >
-                  <Text style={{ color: rating >= num ? "#fff" : "#000" }}>
-                    {num}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setDetailsModalVisible(false);
-                setRating(0);
-              }}
-            >
-              <Text style={styles.modalButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -260,19 +378,15 @@ const toggleToolbar = () => {
 
 export default HomeScreen;
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  menuButton: {
-    position: "absolute",
-    top: 50,
-    left: 20,
-    backgroundColor: "#ffaaa5",
-    padding: 12,
-    borderRadius: 16,
-    zIndex: 10,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff8e7",
   },
   searchBarContainer: {
     position: "absolute",
@@ -294,6 +408,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     marginRight: 10,
+  },
+  searchButton: {
+    backgroundColor: "#455A64",
+    padding: 10,
+    borderRadius: 25,
+    marginRight: 8,
   },
   addButton: {
     backgroundColor: "#455A64",
@@ -341,17 +461,17 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  starButton: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 8,
-    marginHorizontal: 5,
-    backgroundColor: "#eee",
+  detailsModalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
-
-  selectedStarButton: {
-    backgroundColor: "#455A64",
-    borderColor: "#455A64",
+  detailsModalContent: {
+    backgroundColor: "#fff",
+    padding: 24,
+    borderRadius: 20,
+    width: "80%",
+    alignItems: "center",
   },
 });
