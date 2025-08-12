@@ -1,5 +1,18 @@
+// Fetch categories from Firestore (id and name)
+export const getCategoriesFromFirestore = async () => {
+  try {
+    const colRef = collection(db, "categories");
+    const snapshot = await getDocs(colRef);
+    const categories = snapshot.docs.map((doc) => ({ id: doc.id, name: doc.data().name }));
+    return { success: true, categories };
+  } catch (error) {
+    console.error("Error fetching categories from Firestore:", error);
+    return { success: false, error };
+  }
+};
+
 import { auth, db } from "../firebase";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
 
 // Add a place to Firestore with auto-generated ID
 export const addPlaceToFirestore = async ({
@@ -53,4 +66,29 @@ export const getAllPlacesFromFirestore = async () => {
     console.error("Error fetching places from Firestore:", error);
     return { success: false, error };
   }
+};
+
+export const addBookmarkToFirestore = async (place: any) => {
+  const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";
+  await addDoc(collection(db, "bookmarks"), { ...place, user_id });
+};
+
+// Remove a bookmark by place id
+export const removeBookmarkFromFirestore = async (placeId: any) => {
+  const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";
+  const q = query(
+    collection(db, "bookmarks"),
+    where("user_id", "==", user_id),
+    where("id", "==", placeId)
+  );
+  const snap = await getDocs(q);
+  snap.forEach(async (d) => await deleteDoc(doc(db, "bookmarks", d.id)));
+};
+
+// Get all bookmarks for current user
+export const getBookmarksFromFirestore = async () => {
+  const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";
+  const q = query(collection(db, "bookmarks"), where("user_id", "==", user_id));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data());
 };

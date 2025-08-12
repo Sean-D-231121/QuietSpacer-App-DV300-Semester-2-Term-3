@@ -1,5 +1,5 @@
 // screens/Bookmarks.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,45 +10,72 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
- const  Bookmarks = () => {
-    const places = [
-      {
-        name: "Botanical Garden Pretoria",
-        location: "Cussonia Avenue, Brummeria",
-        image:
-          "https://upload.wikimedia.org/wikipedia/commons/e/e9/Pretoria_National_Botanical_Garden_Palms_and_Trees.jpg",
+import { getBookmarksFromFirestore, removeBookmarkFromFirestore } from "../services/DbService";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+type RootStackParamList = {
+  Home: { animateTo: { latitude: number; longitude: number } };
+
+};
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+
+
+const Bookmarks = () => {
+  const [places, setPlaces] = useState<any[]>([]);
+  const navigation = useNavigation<NavigationProp>();
+
+  const fetchBookmarks = async () => {
+    const bookmarks = await getBookmarksFromFirestore();
+    setPlaces(bookmarks);
+  };
+
+  useEffect(() => {
+    fetchBookmarks();
+  }, []);
+
+  const handleGo = (place: any) => {
+    // Navigate to HomeScreen and pass coordinates to animate
+    navigation.navigate("Home", {
+      animateTo: {
+        latitude: place.lat || place.latitude,
+        longitude: place.long || place.longitude,
       },
-      {
-        name: "Botanical Garden Pretoria",
-        location: "Cussonia Avenue, Brummeria",
-        image:
-          "https://upload.wikimedia.org/wikipedia/commons/e/e9/Pretoria_National_Botanical_Garden_Palms_and_Trees.jpg",
-      },
-    ];
+    });
+  };
+
+  const handleLongPress = async (place: any) => {
+    // Remove bookmark and refresh list
+    await removeBookmarkFromFirestore(place.id);
+    fetchBookmarks();
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerRow}>
-        <TouchableOpacity style={styles.menuIcon}>
-          <Feather name="menu" size={24} color="white" />
-        </TouchableOpacity>
         <Text style={styles.title}>Bookmarks</Text>
       </View>
 
       {places.map((place, index) => (
-        <View style={styles.card} key={index}>
-          <Image source={{ uri: place.image }} style={styles.cardImage} />
+        <TouchableOpacity
+          key={index}
+          style={styles.card}
+          onLongPress={() => handleLongPress(place)}
+          delayLongPress={400}
+        >
+          <Image source={{ uri: place.image_url || place.image }} style={styles.cardImage} />
           <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>{place.name}</Text>
-            <Text style={styles.cardLocation}>📍 {place.location}</Text>
-            <TouchableOpacity style={styles.goButton}>
+            <Text style={styles.cardTitle}>{place.title || place.name}</Text>
+            <Text style={styles.cardLocation}>📍 {place.location || place.category_name}</Text>
+            <TouchableOpacity style={styles.goButton} onPress={() => handleGo(place)}>
               <Text style={styles.goText}>Go</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
     </ScrollView>
   );
-}
+};
 
 
 export default Bookmarks

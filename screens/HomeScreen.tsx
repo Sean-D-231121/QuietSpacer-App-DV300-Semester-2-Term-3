@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import MapView, { Marker} from "react-native-maps";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { useNavigation, NavigationProp, useRoute, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { addPlaceToFirestore, getAllPlacesFromFirestore } from "../services/DbService";
 import * as Location from "expo-location";
@@ -31,6 +31,7 @@ type RootStackParamList = {
 };
 
 const HomeScreen = () => {
+  const route = useRoute();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [region, setRegion] = useState<null | {
     latitude: number;
@@ -68,6 +69,23 @@ const HomeScreen = () => {
     { id: 2, latitude: -25.7555, longitude: 28.229, title: "Calm Park" },
     { id: 3, latitude: -25.753, longitude: 28.233, title: "Quiet Spot" },
   ];
+  useFocusEffect(
+    React.useCallback(() => {
+      // If navigation param animateTo is present, animate the map
+      if (route.params && (route.params as any).animateTo && mapRef.current) {
+        const { latitude, longitude } = (route.params as any).animateTo;
+        mapRef.current.animateToRegion(
+          {
+            latitude,
+            longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+          800
+        );
+      }
+    }, [route.params])
+  );
 
   // Search state and ref for MapView
   const [search, setSearch] = useState("");
@@ -120,6 +138,7 @@ const HomeScreen = () => {
       }
       setLoading(false);
     })();
+    
   }, []);
 
   const handleLongPress = (event: any) => {
@@ -211,6 +230,7 @@ const HomeScreen = () => {
         initialRegion={region}
         showsUserLocation
         onLongPress={handleLongPress}
+        
       >
         {/* Predefined markers */}
         {predefinedMarkers.map((marker) => (
