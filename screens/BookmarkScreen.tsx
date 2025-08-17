@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import SwipeButton from "rn-swipe-button";
 
 import { getBookmarksFromFirestore, removeBookmarkFromFirestore } from "../services/DbService";
 import { useNavigation } from "@react-navigation/native";
@@ -37,16 +38,7 @@ const Bookmarks = () => {
       }, [])
     );
 
-  const handleGo = (place: any) => {
-    // Navigate to HomeScreen and pass coordinates to animate
-    navigation.navigate("Home", {
-      animateTo: {
-        latitude: place.lat || place.latitude,
-        longitude: place.long || place.longitude,
-      },
-    });
-  };
-
+  
   const handleLongPress = async (place: any) => {
     // Remove bookmark and refresh list
     await removeBookmarkFromFirestore(place.id);
@@ -66,13 +58,46 @@ const Bookmarks = () => {
           onLongPress={() => handleLongPress(place)}
           delayLongPress={400}
         >
-          <Image source={{ uri: place.image_url || place.image }} style={styles.cardImage} />
+          <Image
+            source={{ uri: place.image_url || place.image }}
+            style={styles.cardImage}
+          />
           <View style={styles.cardContent}>
             <Text style={styles.cardTitle}>{place.title || place.name}</Text>
-            <Text style={styles.cardLocation}>📍 {place.location || place.category_name}</Text>
-            <TouchableOpacity style={styles.goButton} onPress={() => handleGo(place)}>
-              <Text style={styles.goText}>Go</Text>
-            </TouchableOpacity>
+            <Text style={styles.cardLocation}>
+              📍 {place.location || place.category_name}
+            </Text>
+            <View style={{ width: "100%", marginVertical: 10 }}>
+              <SwipeButton
+                thumbIconBackgroundColor="#5f636d"
+                thumbIconBorderColor="#5f636d"
+                railBackgroundColor="#add8e6"
+                railFillBackgroundColor="#455A64"
+                railFillBorderColor="#455A64"
+                title="Swipe to Go"
+                titleColor="#fff"
+                onSwipeSuccess={() => {
+                  if (place.latitude && place.longitude) {
+                    navigation.navigate("Home", {
+                      animateTo: {
+                        latitude: place.latitude,
+                        longitude: place.longitude,
+                      },
+                    });
+                  } else if (place.lat && place.long) {
+                    navigation.navigate("Home", {
+                      animateTo: {
+                        latitude: place.lat,
+                        longitude: place.long,
+                      },
+                    });
+                  } else {
+                    console.warn("Place does not have valid coordinates");
+                  }
+                }}
+                containerStyles={{ borderRadius: 25, height: 50 }}
+              />
+            </View>
           </View>
         </TouchableOpacity>
       ))}

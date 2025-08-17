@@ -21,12 +21,17 @@ import { Keyboard, Animated } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Picker } from "@react-native-picker/picker";
 import SwipeButton from "rn-swipe-button";
+import { getCategoriesFromFirestore } from "../services/DbService";
 type MarkerData = {
   id: number;
   latitude: number;
   longitude: number;
   title?: string;
   name?: string;
+  description?: string;
+  price?: string;
+  category_name?: string;
+  image_url?: string;
 };
 
 type HomeStackParamList = {
@@ -75,6 +80,10 @@ const HomeScreen = () => {
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [keyboardHeight] = useState(new Animated.Value(0));
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    []
+  );
+
   // Predefined markers
   const predefinedMarkers = [
     {
@@ -178,6 +187,12 @@ const HomeScreen = () => {
         setDbMarkers(result.places || []);
       } else {
         setDbMarkers([]);
+      }
+      const catResult = await getCategoriesFromFirestore();
+      if (catResult.success) {
+        setCategories(catResult.categories || []);
+      } else {
+        setCategories([]);
       }
       setLoading(false);
     })();
@@ -344,35 +359,62 @@ const HomeScreen = () => {
         onRequestClose={() => setDetailsModalVisible(false)}
       >
         <View style={styles.detailsModalContainer}>
-          <View style={styles.detailsModalContent}>
-            <Text
-              style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}
-            >
-              {typeof selectedMarker?.title === "string" &&
-              selectedMarker.title.trim() !== ""
-                ? selectedMarker.title
-                : typeof selectedMarker?.name === "string" &&
-                  selectedMarker.name.trim() !== ""
-                ? selectedMarker.name
-                : "Untitled"}
-            </Text>
+          <TouchableOpacity
+            style={styles.detailsModalContainer}
+            activeOpacity={1}
+            onPressOut={() => setDetailsModalVisible(false)}
+          >
             <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setDetailsModalVisible(false);
-                if (selectedMarker) {
-                  navigation.navigate("PlaceDetails", {
-                    marker: selectedMarker,
-                  });
-                }
-              }}
+              activeOpacity={1}
+              style={styles.detailsModalContent}
             >
-              <Text style={styles.modalButtonText}>View Details</Text>
+              {/* Image */}
+              {selectedMarker?.image_url ? (
+                <Image
+                  source={{ uri: selectedMarker.image_url }}
+                  style={styles.detailsImage}
+                />
+              ) : null}
+
+              {/* Name / Title */}
+              <Text style={styles.detailsTitle}>
+                {typeof selectedMarker?.title === "string" &&
+                selectedMarker.title.trim() !== ""
+                  ? selectedMarker.title
+                  : typeof selectedMarker?.name === "string" &&
+                    selectedMarker.name.trim() !== ""
+                  ? selectedMarker.name
+                  : "Untitled"}
+              </Text>
+
+              {/* Description */}
+              {selectedMarker?.description ? (
+                <Text style={styles.detailsDescription}>
+                  {selectedMarker.description}
+                </Text>
+              ) : null}
+
+              {/* View Details Button */}
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  setDetailsModalVisible(false);
+                  if (selectedMarker) {
+                    navigation.navigate("PlaceDetails", {
+                      marker: selectedMarker,
+                    });
+                  }
+                }}
+              >
+                <Text style={styles.modalButtonText}>View Details</Text>
+              </TouchableOpacity>
+
+              {/* Close Button */}
+              <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
+                <Text style={{ color: "#999", marginTop: 10 }}>Close</Text>
+              </TouchableOpacity>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
-              <Text style={{ color: "#999", marginTop: 10 }}>Close</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </View>
       </Modal>
 
@@ -445,11 +487,9 @@ const HomeScreen = () => {
                 style={{ height: 50, width: "100%" }}
               >
                 <Picker.Item label="Select a category" value="" />
-                <Picker.Item label="Lake" value="lake" />
-                <Picker.Item label="Dam" value="dam" />
-                <Picker.Item label="Restaurant" value="restaurant" />
-                <Picker.Item label="Park" value="park" />
-                <Picker.Item label="Other" value="other" />
+                {categories.map((cat) => (
+                  <Picker.Item key={cat.id} label={cat.name} value={cat.name} />
+                ))}
               </Picker>
             </View>
 
@@ -483,8 +523,6 @@ const HomeScreen = () => {
                 containerStyles={{ borderRadius: 25, height: 50 }}
               />
             </View>
-
-           
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -551,7 +589,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 20,
-    width: "80%",
+    width: "100%",
     alignItems: "center",
   },
   modalTitle: {
@@ -587,7 +625,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 24,
     borderRadius: 20,
-    width: "80%",
+    width: "100%",
     alignItems: "center",
+  },
+  detailsImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  detailsTitle: {
+    fontWeight: "bold",
+    fontSize: 20,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  detailsDescription: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 20,
+    textAlign: "center",
   },
 });

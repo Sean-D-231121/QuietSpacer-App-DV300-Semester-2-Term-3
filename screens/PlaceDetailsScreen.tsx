@@ -11,6 +11,7 @@ import { Feather, MaterialIcons, Entypo } from "@expo/vector-icons";
 import { addBookmarkToFirestore, removeBookmarkFromFirestore, getBookmarksFromFirestore } from "../services/DbService";
 import { useRoute, useNavigation} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import SwipeButton from "rn-swipe-button";
  type RootStackParamList = {
   Homescreen: { animateTo: { latitude: number; longitude: number } };
 
@@ -91,30 +92,38 @@ const PlaceDetails = () =>{
               "The Pretoria National Botanical Garden is one of South Africa's nine national botanical gardens..."}
           </Text>
         </View>
-        <TouchableOpacity
-          style={styles.goButton}
-          onPress={() => {
-            if (marker && marker.latitude && marker.longitude) {
-              navigation.navigate('Homescreen', {
-                animateTo: {
-                  latitude: marker.latitude || marker.lat,
-                  longitude: marker.longitude || marker.long,
-                },
-              });
-            } else if (marker && marker.lat && marker.long) {
-              navigation.navigate('Homescreen', {
-                animateTo: {
-                  latitude: marker.lat,
-                  longitude: marker.long,
-                },
-              });
-            } else {
-              console.warn("Marker does not have valid coordinates");
-            }
-          }}
-        >
-          <Text style={styles.goText}>Go</Text>
-        </TouchableOpacity>
+        <View style={{ width: "100%", marginVertical: 10 }}>
+          <SwipeButton
+            thumbIconBackgroundColor="#5f636d"
+            thumbIconBorderColor="#5f636d"
+            railBackgroundColor="#add8e6"
+            railFillBackgroundColor="#455A64"
+            railFillBorderColor="#455A64"
+            title="Swipe to Go"
+            titleColor="#fff"
+            onSwipeSuccess={() => {
+              if (marker && marker.latitude && marker.longitude) {
+                navigation.navigate("Homescreen", {
+                  animateTo: {
+                    latitude: marker.latitude || marker.lat,
+                    longitude: marker.longitude || marker.long,
+                  },
+                });
+              } else if (marker && marker.lat && marker.long) {
+                navigation.navigate("Homescreen", {
+                  animateTo: {
+                    latitude: marker.lat,
+                    longitude: marker.long,
+                  },
+                });
+              } else {
+                console.warn("Marker does not have valid coordinates");
+              }
+            }}
+            containerStyles={{ borderRadius: 25, height: 50 }}
+          />
+        </View>
+        
       </View>
 
       {/* Reviews */}
