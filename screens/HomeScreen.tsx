@@ -20,7 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Keyboard, Animated } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Picker } from "@react-native-picker/picker";
-
+import SwipeButton from "rn-swipe-button";
 type MarkerData = {
   id: number;
   latitude: number;
@@ -361,9 +361,8 @@ const HomeScreen = () => {
               onPress={() => {
                 setDetailsModalVisible(false);
                 if (selectedMarker) {
-                  navigation.navigate("Home", {
-                    screen: "PlaceDetails",
-                    params: { marker: selectedMarker },
+                  navigation.navigate("PlaceDetails", {
+                    marker: selectedMarker,
                   });
                 }
               }}
@@ -400,16 +399,27 @@ const HomeScreen = () => {
       </Animated.View>
 
       {/* Add Place Modal */}
+      {/* Add Place Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+        {/* Overlay to close modal */}
+        <TouchableOpacity
+          style={styles.modalContainer}
+          activeOpacity={1}
+          onPressOut={() => setModalVisible(false)}
+        >
+          {/* Modal content */}
+          <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
             <Text style={styles.modalTitle}>Add New Place</Text>
+
+            {/* Place Name */}
             <TextInput
               placeholder="Place name"
               style={styles.modalInput}
               value={placeName}
               onChangeText={setPlaceName}
             />
+
+            {/* Price */}
             <TextInput
               placeholder="Price (e.g. 0 or 50)"
               style={styles.modalInput}
@@ -417,6 +427,8 @@ const HomeScreen = () => {
               onChangeText={setPlacePrice}
               keyboardType="numeric"
             />
+
+            {/* Description */}
             <TextInput
               placeholder="Description"
               style={[styles.modalInput, { height: 60 }]}
@@ -424,6 +436,8 @@ const HomeScreen = () => {
               onChangeText={setPlaceDescription}
               multiline
             />
+
+            {/* Category Picker */}
             <View style={[styles.modalInput, { padding: 0 }]}>
               <Picker
                 selectedValue={placeCategory}
@@ -439,6 +453,7 @@ const HomeScreen = () => {
               </Picker>
             </View>
 
+            {/* Select Image */}
             <TouchableOpacity style={styles.modalButton} onPress={pickImage}>
               <Text style={styles.modalButtonText}>Select Photo</Text>
             </TouchableOpacity>
@@ -453,14 +468,25 @@ const HomeScreen = () => {
                 }}
               />
             ) : null}
-            <TouchableOpacity style={styles.modalButton} onPress={saveMarker}>
-              <Text style={styles.modalButtonText}>Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={{ color: "#999", marginTop: 10 }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+
+            {/* Swipe to Save */}
+            <View style={{ width: "100%", marginVertical: 10 }}>
+              <SwipeButton
+                thumbIconBackgroundColor="#5f636d"
+                thumbIconBorderColor="#5f636d"
+                railBackgroundColor="#add8e6"
+                railFillBackgroundColor="#455A64"
+                railFillBorderColor="#455A64"
+                title="Swipe to Save"
+                titleColor="#fff"
+                onSwipeSuccess={saveMarker}
+                containerStyles={{ borderRadius: 25, height: 50 }}
+              />
+            </View>
+
+           
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </KeyboardAvoidingView>
   );

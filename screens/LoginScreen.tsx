@@ -43,10 +43,6 @@ const LoginScreen = ({navigation}) =>{
             onChangeText={setPassword}
           />
 
-          {/* Sign Up Button */}
-          {/* Swipe Sign Up Button */}
-
-          {/* Swipe Button */}
           <View style={SignUpstyles.swipeWrapper}>
             <SwipeButton
               thumbIconBackgroundColor="#5f636d"

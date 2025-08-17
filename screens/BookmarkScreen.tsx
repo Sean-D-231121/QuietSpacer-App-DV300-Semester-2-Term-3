@@ -1,5 +1,5 @@
 // screens/Bookmarks.js
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { Feather } from "@expo/vector-icons";
 import { getBookmarksFromFirestore, removeBookmarkFromFirestore } from "../services/DbService";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 
 type RootStackParamList = {
   Home: { animateTo: { latitude: number; longitude: number } };
@@ -30,9 +31,11 @@ const Bookmarks = () => {
     setPlaces(bookmarks);
   };
 
-  useEffect(() => {
-    fetchBookmarks();
-  }, []);
+    useFocusEffect(
+      React.useCallback(() => {
+        fetchBookmarks();
+      }, [])
+    );
 
   const handleGo = (place: any) => {
     // Navigate to HomeScreen and pass coordinates to animate
