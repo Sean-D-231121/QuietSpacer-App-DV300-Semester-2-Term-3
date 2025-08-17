@@ -17,6 +17,9 @@ import { Feather } from "@expo/vector-icons";
 import { addPlaceToFirestore, getAllPlacesFromFirestore } from "../services/DbService";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
+import { Keyboard, Animated } from "react-native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Picker } from "@react-native-picker/picker";
 
 type MarkerData = {
   id: number;
@@ -26,13 +29,26 @@ type MarkerData = {
   name?: string;
 };
 
-type RootStackParamList = {
-  "Place Details": { marker: MarkerData };
+type HomeStackParamList = {
+  Home: undefined;
+  PlaceDetails: { marker: MarkerData };
 };
+
+// Drawer navigator
+type DrawerParamList = {
+  Home: undefined; // points to HomeStack
+  Bookmarks: undefined;
+  Profile: undefined;
+  "Sign Out": undefined;
+};
+type HomeScreenNavigationProp = NativeStackNavigationProp<
+  HomeStackParamList,
+  "Home"
+>;
 
 const HomeScreen = () => {
   const route = useRoute();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const [region, setRegion] = useState<null | {
     latitude: number;
     longitude: number;
@@ -58,6 +74,7 @@ const HomeScreen = () => {
   // Modal state for marker details
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [keyboardHeight] = useState(new Animated.Value(0));
   // Predefined markers
   const predefinedMarkers = [
     {
@@ -69,6 +86,32 @@ const HomeScreen = () => {
     { id: 2, latitude: -25.7555, longitude: 28.229, title: "Calm Park" },
     { id: 3, latitude: -25.753, longitude: 28.233, title: "Quiet Spot" },
   ];
+  
+
+  
+  
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(keyboardHeight, {
+        toValue: e.endCoordinates.height, // extra padding
+        duration: 250,
+        useNativeDriver: false,
+      }).start();
+    });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(keyboardHeight, {
+        toValue: 0, // original bottom padding
+        duration: 250,
+        useNativeDriver: false,
+      }).start();
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   useFocusEffect(
     React.useCallback(() => {
       // If navigation param animateTo is present, animate the map
@@ -98,7 +141,7 @@ const HomeScreen = () => {
         (m.title || m.name || "").toLowerCase().includes(search.toLowerCase())
     );
     if (found && mapRef.current) {
-      // Firestore pins use lat/long
+      
       mapRef.current.animateToRegion(
         {
           latitude: found.lat,
@@ -230,7 +273,6 @@ const HomeScreen = () => {
         initialRegion={region}
         showsUserLocation
         onLongPress={handleLongPress}
-        
       >
         {/* Predefined markers */}
         {predefinedMarkers.map((marker) => (
@@ -266,7 +308,10 @@ const HomeScreen = () => {
               setDetailsModalVisible(true);
             }}
           >
-            <Image source={require("../assets/Pin.png")} style={styles.pinIcon} />
+            <Image
+              source={require("../assets/Pin.png")}
+              style={styles.pinIcon}
+            />
           </Marker>
         ))}
         {/* Firestore markers */}
@@ -283,7 +328,10 @@ const HomeScreen = () => {
               setDetailsModalVisible(true);
             }}
           >
-            <Image source={require("../assets/Pin.png")} style={styles.pinIcon} />
+            <Image
+              source={require("../assets/Pin.png")}
+              style={styles.pinIcon}
+            />
           </Marker>
         ))}
       </MapView>
@@ -297,19 +345,26 @@ const HomeScreen = () => {
       >
         <View style={styles.detailsModalContainer}>
           <View style={styles.detailsModalContent}>
-            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}>
-              {typeof selectedMarker?.title === 'string' && selectedMarker.title.trim() !== ''
+            <Text
+              style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}
+            >
+              {typeof selectedMarker?.title === "string" &&
+              selectedMarker.title.trim() !== ""
                 ? selectedMarker.title
-                : typeof selectedMarker?.name === 'string' && selectedMarker.name.trim() !== ''
+                : typeof selectedMarker?.name === "string" &&
+                  selectedMarker.name.trim() !== ""
                 ? selectedMarker.name
-                : 'Untitled'}
+                : "Untitled"}
             </Text>
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
                 setDetailsModalVisible(false);
                 if (selectedMarker) {
-                  navigation.navigate("Place Details", { marker: selectedMarker });
+                  navigation.navigate("Home", {
+                    screen: "PlaceDetails",
+                    params: { marker: selectedMarker },
+                  });
                 }
               }}
             >
@@ -322,8 +377,9 @@ const HomeScreen = () => {
         </View>
       </Modal>
 
-      {/* Search Bar */}
-      <View style={styles.searchBarContainer}>
+      <Animated.View
+        style={[styles.searchBarContainer, { bottom: keyboardHeight }]}
+      >
         <TextInput
           placeholder="Where to?"
           style={styles.searchInput}
@@ -332,10 +388,7 @@ const HomeScreen = () => {
           onChangeText={setSearch}
           returnKeyType="search"
         />
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={handleSearch}
-        >
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Feather name="search" size={20} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity
@@ -344,7 +397,7 @@ const HomeScreen = () => {
         >
           <Feather name="plus" size={20} color="#fff" />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       {/* Add Place Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -371,17 +424,34 @@ const HomeScreen = () => {
               onChangeText={setPlaceDescription}
               multiline
             />
-            <TextInput
-              placeholder="Category (e.g. lake, dam, restaurant)"
-              style={styles.modalInput}
-              value={placeCategory}
-              onChangeText={setPlaceCategory}
-            />
+            <View style={[styles.modalInput, { padding: 0 }]}>
+              <Picker
+                selectedValue={placeCategory}
+                onValueChange={(itemValue) => setPlaceCategory(itemValue)}
+                style={{ height: 50, width: "100%" }}
+              >
+                <Picker.Item label="Select a category" value="" />
+                <Picker.Item label="Lake" value="lake" />
+                <Picker.Item label="Dam" value="dam" />
+                <Picker.Item label="Restaurant" value="restaurant" />
+                <Picker.Item label="Park" value="park" />
+                <Picker.Item label="Other" value="other" />
+              </Picker>
+            </View>
+
             <TouchableOpacity style={styles.modalButton} onPress={pickImage}>
               <Text style={styles.modalButtonText}>Select Photo</Text>
             </TouchableOpacity>
             {placeImage ? (
-              <Image source={{ uri: placeImage }} style={{ width: 80, height: 80, marginBottom: 10, borderRadius: 10 }} />
+              <Image
+                source={{ uri: placeImage }}
+                style={{
+                  width: 80,
+                  height: 80,
+                  marginBottom: 10,
+                  borderRadius: 10,
+                }}
+              />
             ) : null}
             <TouchableOpacity style={styles.modalButton} onPress={saveMarker}>
               <Text style={styles.modalButtonText}>Save</Text>

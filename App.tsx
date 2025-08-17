@@ -27,14 +27,38 @@ function SignOutScreen() {
 
   return <View />;
 }
+function HomeStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Homescreen" component={HomeScreen} />
+      <Stack.Screen
+        name="PlaceDetails"
+        component={PlaceDetails}
+        listeners={({ navigation }) => ({
+          blur: () => {
+            // When leaving Home, reset stack so it goes back to Homescreen
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Homescreen" }],
+            });
+          },
+        })}
+      />
+    </Stack.Navigator>
+  );
+}
 
 function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Home">
-      <Drawer.Screen name="Home" component={HomeScreen} />
+      <Drawer.Screen
+        name="Home"
+        component={HomeStack}
+        
+      />
+
       <Drawer.Screen name="Bookmarks" component={Bookmarks} />
       <Drawer.Screen name="Profile" component={Profile} />
-      <Drawer.Screen name="Place Details" component={PlaceDetails} />
       <Drawer.Screen name="Sign Out" component={SignOutScreen} />
     </Drawer.Navigator>
   );
@@ -63,6 +87,7 @@ export default function App() {
     <NavigationContainer>
       {isLoggedIn ? (
         <DrawerNavigator />
+        
       ) : (
         <Stack.Navigator>
           <Stack.Screen name="Login" component={LoginScreen} />

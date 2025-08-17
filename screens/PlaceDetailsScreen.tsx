@@ -12,10 +12,10 @@ import { addBookmarkToFirestore, removeBookmarkFromFirestore, getBookmarksFromFi
 import { useRoute, useNavigation} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
  type RootStackParamList = {
-  Home: { animateTo: { latitude: number; longitude: number } };
+  Homescreen: { animateTo: { latitude: number; longitude: number } };
 
 };
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Homescreen">;
 
 const PlaceDetails = () =>{
   
@@ -95,21 +95,21 @@ const PlaceDetails = () =>{
           style={styles.goButton}
           onPress={() => {
             if (marker && marker.latitude && marker.longitude) {
-              navigation.navigate('Home', {
+              navigation.navigate('Homescreen', {
                 animateTo: {
                   latitude: marker.latitude || marker.lat,
                   longitude: marker.longitude || marker.long,
                 },
               });
             } else if (marker && marker.lat && marker.long) {
-              navigation.navigate('Home', {
+              navigation.navigate('Homescreen', {
                 animateTo: {
                   latitude: marker.lat,
                   longitude: marker.long,
                 },
               });
             } else {
-              // fallback: do nothing or show error
+              console.warn("Marker does not have valid coordinates");
             }
           }}
         >
