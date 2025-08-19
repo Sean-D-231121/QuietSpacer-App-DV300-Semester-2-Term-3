@@ -3,7 +3,7 @@ import { SafeAreaView, View, Image, Text, TextInput, Alert, TouchableOpacity} fr
 import SignUpstyles from "./SignUpStylesheet.styles";
 import SwipeButton from "rn-swipe-button";
 import { login } from "../services/authService";
-const LoginScreen = ({navigation}) =>{
+const LoginScreen = ({navigation} :any) =>{
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const handleLogin = () =>{

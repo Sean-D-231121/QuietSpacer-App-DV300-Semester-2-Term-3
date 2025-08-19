@@ -36,9 +36,6 @@ const SearchBar = ({
       <TouchableOpacity style={styles.button} onPress={handleSearch}>
         <Feather name="search" size={20} color="#fff" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={openAddPlace}>
-        <Feather name="plus" size={20} color="#fff" />
-      </TouchableOpacity>
     </Animated.View>
   );
 };

@@ -7,10 +7,13 @@ import {
   TextInput,
   Image,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import SwipeButton from "rn-swipe-button";
 import * as ImagePicker from "expo-image-picker";
+import RNPickerSelect from "react-native-picker-select";
+import { Dropdown } from "react-native-element-dropdown";
 
 type Props = {
   visible: boolean;
@@ -18,7 +21,7 @@ type Props = {
   addPlaceToFirestore: (place: any) => Promise<any>;
   categories: { id: string; name: string }[];
   setCustomMarkers: React.Dispatch<React.SetStateAction<any[]>>;
-  coords: { latitude: number; longitude: number } | null; // ✅ new
+  coords: { latitude: number; longitude: number } | null;
 };
 
 const AddPlaceModal = ({
@@ -132,17 +135,16 @@ const AddPlaceModal = ({
             onChangeText={setPlaceDescription}
           />
 
-          <View style={[styles.input, { padding: 0 }]}>
-            <Picker
-              selectedValue={placeCategory}
-              onValueChange={(val) => setPlaceCategory(val)}
-              style={{ height: 50 }}
-            >
-              <Picker.Item label="Select a category" value="" />
-              {categories.map((c) => (
-                <Picker.Item key={c.id} label={c.name} value={c.name} />
-              ))}
-            </Picker>
+          <View style={{ width: "100%", marginBottom: 10 }}>
+            <Dropdown
+              style={styles.dropdown}
+              data={categories.map((c) => ({ label: c.name, value: c.name }))}
+              labelField="label"
+              valueField="value"
+              placeholder="Select a category"
+              value={placeCategory}
+              onChange={(item) => setPlaceCategory(item.value)}
+            />
           </View>
 
           <TouchableOpacity style={styles.button} onPress={pickImage}>
@@ -202,4 +204,19 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#fff", fontWeight: "bold" },
   preview: { width: 80, height: 80, marginBottom: 10, borderRadius: 10 },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    width: "100%",
+    marginBottom: 10,
+    overflow: "hidden", // makes border radius work on Picker
+  },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+  },
 });

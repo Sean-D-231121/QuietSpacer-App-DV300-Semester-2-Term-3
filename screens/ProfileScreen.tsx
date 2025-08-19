@@ -1,187 +1,62 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-} from "react-native";
-import * as Progress from "react-native-progress";
-
-const initialProfileData = {
-  username: "Elnacho52",
-  bio: "I’m a curious and creative thinker who enjoys exploring new ideas and solving problems in unique ways. I have a passion for technology and design, and I love building things that make life easier for others.",
-  profilePic: "https://placekitten.com/200/200",
-  calmScore: 8.7,
-  totalVisits: 100,
-  moodLogs: 45,
-  calmDaysThisWeek: 5,
-  favoriteCategories: [
-    { name: "Nature & Parks", percent: 0.6 },
-    { name: "Cafes", percent: 0.2 },
-    { name: "Museums", percent: 0.1 },
-    { name: "Theatres", percent: 0.1 },
-  ],
-  favoritePlaces: [
-    {
-      name: "Botanical Gardens",
-      visits: 50,
-      image: "https://placekitten.com/300/200",
-    },
-    {
-      name: "Lakeside Retreat",
-      visits: 20,
-      image: "https://placekitten.com/301/200",
-    },
-    {
-      name: "Urban Green Spot",
-      visits: 15,
-      image: "https://placekitten.com/302/200",
-    },
-    {
-      name: "Old Town Plaza",
-      visits: 10,
-      image: "https://placekitten.com/303/200",
-    },
-    {
-      name: "Downtown Carnival",
-      visits: 5,
-      image: "https://placekitten.com/304/200",
-    },
-  ],
-  moodHistory: [
-    {
-      mood: "😌 Calm",
-      description: "Sat near the lake and just breathed deeply.",
-      time: "Today",
-    },
-    {
-      mood: "😃 Happy",
-      description: "Loved the walk through botanical gardens.",
-      time: "Yesterday",
-    },
-    {
-      mood: "😔 Sad",
-      description: "A bit overwhelmed, took a break in the park.",
-      time: "2 days ago",
-    },
-  ],
-};
-
-const moodOptions = [
-  "😌 Calm",
-  "😃 Happy",
-  "😔 Sad",
-  "😡 Angry",
-  "😴 Tired",
-  "🤩 Excited",
-];
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
+import { getUserProfile } from "../services/DbService";
+import { auth } from "../firebase";
 
 const ProfileScreen = () => {
-  const [profileData, setProfileData] = useState(initialProfileData);
-  const [selectedMood, setSelectedMood] = useState("");
-  const [moodDescription, setMoodDescription] = useState("");
+  const [profileData, setProfileData] = useState<any>(null);
 
-  const addMoodLog = () => {
-    if (!selectedMood) return;
-    const newLog = {
-      mood: selectedMood,
-      description: moodDescription || "No description provided.",
-      time: "Just now",
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!auth.currentUser) return;
+      const userProfile = await getUserProfile(auth.currentUser.uid);
+      if (userProfile) setProfileData(userProfile);
     };
-    setProfileData((prev) => ({
-      ...prev,
-      moodHistory: [newLog, ...prev.moodHistory],
-    }));
-    setSelectedMood("");
-    setMoodDescription("");
-  };
+
+    fetchProfile();
+  }, []);
+
+  if (!profileData) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text>Loading profile...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
       <Image
-        source={{ uri: profileData.profilePic }}
+        source={{
+          uri: profileData.profile_pic || "https://placekitten.com/200/200",
+        }}
         style={styles.profilePic}
       />
       <Text style={styles.label}>Username</Text>
       <Text style={styles.username}>{profileData.username}</Text>
 
-      <Text style={styles.label}>What I like?</Text>
-      <Text style={styles.bio}>{profileData.bio}</Text>
+      <Text style={styles.label}>Bio</Text>
+      <Text style={styles.bio}>{profileData.bio || "No bio yet."}</Text>
 
-      <Text style={styles.label}>Calmness Stats</Text>
-      <View style={styles.statsContainer}>
-        <Text>Average Calm Score: 🌿 {profileData.calmScore} / 10</Text>
-        <Text>Total Visits: 📍 {profileData.totalVisits}</Text>
-        <Text>Mood Logs: 😊 {profileData.moodLogs}</Text>
-        <Text style={{ marginTop: 10 }}>Calm Days This Week</Text>
-        <Progress.Bar
-          progress={profileData.calmDaysThisWeek / 7}
-          width={null}
-          color="#7BD3EA"
-        />
-      </View>
-
-      <Text style={styles.label}>Categories That I Like</Text>
-      {profileData.favoriteCategories.map((cat, index) => (
-        <View key={index} style={styles.categoryRow}>
-          <Text style={styles.categoryText}>{cat.name}</Text>
-          <Progress.Bar progress={cat.percent} width={null} color="#A0E7E5" />
-        </View>
-      ))}
-
-      <Text style={styles.label}>Favourite Places</Text>
-      {profileData.favoritePlaces.map((place, index) => (
-        <View key={index} style={styles.placeRow}>
-          <Image source={{ uri: place.image }} style={styles.placeImage} />
-          <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text style={styles.placeName}>{place.name}</Text>
-            <Text>Visits: {place.visits}</Text>
-            <Progress.Bar
-              progress={place.visits / 50}
-              width={null}
-              color="#FFB5A7"
-            />
+      <Text style={styles.label}>Mood History</Text>
+      {profileData.moods && profileData.moods.length > 0 ? (
+        profileData.moods.map((entry: any) => (
+          <View key={entry.id} style={styles.moodLog}>
+            <Text style={styles.mood}>{entry.type}</Text>
+            <Text style={styles.moodDesc}>{entry.description}</Text>
+            <Text style={styles.moodTime}>
+              {new Date(entry.date).toLocaleString()}
+            </Text>
           </View>
-        </View>
-      ))}
-
-      {/* Mood Input Section */}
-      <Text style={styles.label}>Add Current Mood</Text>
-      <View style={styles.moodOptions}>
-        {moodOptions.map((m, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[
-              styles.moodOption,
-              selectedMood === m && { backgroundColor: "#FFD6A5" },
-            ]}
-            onPress={() => setSelectedMood(m)}
-          >
-            <Text style={styles.moodText}>{m}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <TextInput
-        style={styles.input}
-        placeholder="Describe your mood..."
-        value={moodDescription}
-        onChangeText={setMoodDescription}
-      />
-      <TouchableOpacity style={styles.saveBtn} onPress={addMoodLog}>
-        <Text style={styles.saveBtnText}>Save Mood</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.label}>Recent Mood Logs</Text>
-      {profileData.moodHistory.map((entry, index) => (
-        <View key={index} style={styles.moodLog}>
-          <Text style={styles.mood}>{entry.mood}</Text>
-          <Text style={styles.moodDesc}>{entry.description}</Text>
-          <Text style={styles.moodTime}>{entry.time}</Text>
-        </View>
-      ))}
+        ))
+      ) : (
+        <Text>No moods logged yet.</Text>
+      )}
     </ScrollView>
   );
 };
