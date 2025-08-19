@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Text,
   Animated,
+  Keyboard,
 } from "react-native";
 import MapView from "react-native-maps";
 import {
@@ -30,15 +31,7 @@ const HomeScreen = () => {
   const route = useRoute();
   const navigation = useNavigation<any>();
   const mapRef = useRef<MapView>(null);
-  interface MarkerData {
-    id: string | number;
-    latitude?: number;
-    longitude?: number;
-    lat?: number;
-    long?: number;
-    title?: string;
-    name?: string;
-  }
+
   const [region, setRegion] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [longPressCoords, setLongPressCoords] = useState<{
@@ -48,30 +41,48 @@ const HomeScreen = () => {
 
   const [dbMarkers, setDbMarkers] = useState<any[]>([]);
   const [customMarkers, setCustomMarkers] = useState<any[]>([]);
-  const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
+  const [selectedMarker, setSelectedMarker] = useState<any>(null);
 
   const [search, setSearch] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
-
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     []
   );
-  const [keyboardHeight] = useState(new Animated.Value(0));
 
-  // Predefined markers
-  const predefinedMarkers = [
-    {
-      id: 1,
-      latitude: -25.7545,
-      longitude: 28.2314,
-      title: "Botanical Garden",
-    },
-    { id: 2, latitude: -25.7555, longitude: 28.229, title: "Calm Park" },
-    { id: 3, latitude: -25.753, longitude: 28.233, title: "Quiet Spot" },
-  ];
+  const [keyboardHeight] = useState(new Animated.Value(20)); // default 20 for bottom padding
 
-  // Fetch location & data
+  // 🔹 Animate search bar with keyboard
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => {
+        Animated.timing(keyboardHeight, {
+          toValue: e.endCoordinates.height + 10, // lift above keyboard
+          duration: 250,
+          useNativeDriver: false,
+        }).start();
+      }
+    );
+
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        Animated.timing(keyboardHeight, {
+          toValue: 20, // reset to default
+          duration: 250,
+          useNativeDriver: false,
+        }).start();
+      }
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [keyboardHeight]);
+
+  // 📍 Location & DB fetch
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -95,19 +106,6 @@ const HomeScreen = () => {
       setLoading(false);
     })();
   }, []);
-
-  // Jump to place if navigated with param
-  useFocusEffect(
-    React.useCallback(() => {
-      if (route.params && (route.params as any).animateTo && mapRef.current) {
-        const { latitude, longitude } = (route.params as any).animateTo;
-        mapRef.current.animateToRegion(
-          { latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 },
-          800
-        );
-      }
-    }, [route.params])
-  );
 
   // Search
   const handleSearch = () => {
@@ -143,7 +141,7 @@ const HomeScreen = () => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <MapView
         ref={mapRef}
@@ -157,7 +155,21 @@ const HomeScreen = () => {
         }}
       >
         <MapMarkers
-          predefinedMarkers={predefinedMarkers}
+          predefinedMarkers={[
+            { id: 1, latitude: -25.7545, longitude: 28.2314, title: "Garden" },
+            {
+              id: 2,
+              latitude: -25.7555,
+              longitude: 28.229,
+              title: "Calm Park",
+            },
+            {
+              id: 3,
+              latitude: -25.753,
+              longitude: 28.233,
+              title: "Quiet Spot",
+            },
+          ]}
           customMarkers={customMarkers}
           dbMarkers={dbMarkers}
           setSelectedMarker={setSelectedMarker}
@@ -165,6 +177,7 @@ const HomeScreen = () => {
         />
       </MapView>
 
+      {/* 🔹 Search Bar now animates above keyboard */}
       <SearchBar
         search={search}
         setSearch={setSearch}
@@ -186,7 +199,7 @@ const HomeScreen = () => {
         addPlaceToFirestore={addPlaceToFirestore}
         categories={categories}
         setCustomMarkers={setCustomMarkers}
-        coords={longPressCoords} // ✅ pass down coords
+        coords={longPressCoords}
       />
     </KeyboardAvoidingView>
   );

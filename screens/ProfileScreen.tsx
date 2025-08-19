@@ -1,20 +1,79 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
-import { getUserProfile } from "../services/DbService";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { getUserProfile, updateUserProfile } from "../services/DbService";
 import { auth } from "../firebase";
+import { updateEmail, updatePassword } from "firebase/auth";
 
 const ProfileScreen = () => {
   const [profileData, setProfileData] = useState<any>(null);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [profilePic, setProfilePic] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!auth.currentUser) return;
       const userProfile = await getUserProfile(auth.currentUser.uid);
-      if (userProfile) setProfileData(userProfile);
+      if (userProfile) {
+        setProfileData(userProfile);
+        setUsername(userProfile.username || "");
+        setEmail(userProfile.email || "");
+        setProfilePic(userProfile.profile_pic || "");
+      }
     };
-
     fetchProfile();
   }, []);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setProfilePic(result.assets[0].uri);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!auth.currentUser) return;
+
+    try {
+      // update auth email
+      if (email && email !== auth.currentUser.email) {
+        await updateEmail(auth.currentUser, email);
+      }
+
+      // update auth password
+      if (password) {
+        await updatePassword(auth.currentUser, password);
+      }
+
+      // update Firestore doc
+      await updateUserProfile(auth.currentUser.uid, {
+        username,
+        email,
+        profile_pic: profilePic,
+      });
+
+      alert("Profile updated!");
+    } catch (err: any) {
+      console.error("Update error:", err);
+      alert(err.message);
+    }
+  };
 
   if (!profileData) {
     return (
@@ -31,17 +90,43 @@ const ProfileScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Image
-        source={{
-          uri: profileData.profile_pic || "https://placekitten.com/200/200",
-        }}
-        style={styles.profilePic}
-      />
-      <Text style={styles.label}>Username</Text>
-      <Text style={styles.username}>{profileData.username}</Text>
+      <TouchableOpacity onPress={pickImage}>
+        <Image
+          source={{
+            uri: profilePic || "https://placekitten.com/200/200",
+          }}
+          style={styles.profilePic}
+        />
+      </TouchableOpacity>
 
-      <Text style={styles.label}>Bio</Text>
-      <Text style={styles.bio}>{profileData.bio || "No bio yet."}</Text>
+      <Text style={styles.label}>Username</Text>
+      <TextInput
+        style={styles.input}
+        value={username}
+        onChangeText={setUsername}
+      />
+
+      <Text style={styles.label}>Email</Text>
+      <TextInput
+        style={styles.input}
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+
+      <Text style={styles.label}>Password</Text>
+      <TextInput
+        style={styles.input}
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        placeholder="Enter new password"
+      />
+
+      <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+        <Text style={styles.saveBtnText}>Save Changes</Text>
+      </TouchableOpacity>
 
       <Text style={styles.label}>Mood History</Text>
       {profileData.moods && profileData.moods.length > 0 ? (
@@ -82,65 +167,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 6,
     color: "#333",
-  },
-  username: {
-    fontSize: 18,
-    backgroundColor: "#BDE0FE",
-    padding: 8,
-    borderRadius: 15,
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  bio: {
-    backgroundColor: "#BDE0FE",
-    padding: 10,
-    borderRadius: 15,
-    textAlign: "center",
-  },
-  statsContainer: {
-    backgroundColor: "#E2F0CB",
-    padding: 10,
-    borderRadius: 12,
-  },
-  categoryRow: {
-    marginBottom: 10,
-  },
-  categoryText: {
-    marginBottom: 5,
-    fontWeight: "500",
-  },
-  placeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFE5EC",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  placeImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
-  },
-  placeName: {
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  moodOptions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 10,
-  },
-  moodOption: {
-    backgroundColor: "#FFF",
-    padding: 8,
-    borderRadius: 8,
-    margin: 4,
-    borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  moodText: {
-    fontSize: 18,
   },
   input: {
     backgroundColor: "#fff",

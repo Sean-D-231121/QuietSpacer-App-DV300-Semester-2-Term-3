@@ -8,6 +8,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 export const getCategoriesFromFirestore = async () => {
@@ -129,7 +130,27 @@ export const addMoodToFirestore = async ({
   }
 };
 
-export const getUserProfile = async (userId: string) => {
+type Mood = {
+  id: string;
+  placeId: any;
+  type: any;
+  description: any;
+  date: any;
+};
+
+export type UserProfile = {
+  user_id: string;
+  username: string;
+  email: string;
+  bio: string;
+  profile_pic: string;
+  createdAt: any;
+  moods: Mood[];
+};
+
+export const getUserProfile = async (
+  userId: string
+): Promise<UserProfile | null> => {
   try {
     console.log("Fetching user profile for UID:", userId);
     const docRef = doc(db, "users", userId);
@@ -140,8 +161,7 @@ export const getUserProfile = async (userId: string) => {
       return null;
     }
 
-    const data = docSnap.data();
-    console.log("User data:", data);
+    const data = docSnap.data() as Omit<UserProfile, "moods">; // 👈 force Firestore data to correct type
 
     // Fetch moods by this user
     const moodsQuery = query(
@@ -149,15 +169,13 @@ export const getUserProfile = async (userId: string) => {
       where("user_id", "==", userId)
     );
     const moodsSnap = await getDocs(moodsQuery);
-    const moods = moodsSnap.docs.map((d) => {
-      return {
-        id: d.id,
-        placeId: d.data().placeId,
-        type: d.data().type,
-        description: d.data().description,
-        date: d.data().date,
-      };
-    });
+    const moods: Mood[] = moodsSnap.docs.map((d) => ({
+      id: d.id,
+      placeId: d.data().placeId,
+      type: d.data().type,
+      description: d.data().description,
+      date: d.data().date,
+    }));
 
     return {
       ...data,
@@ -167,4 +185,9 @@ export const getUserProfile = async (userId: string) => {
     console.error("Error fetching user profile:", error);
     return null;
   }
+};
+
+export const updateUserProfile = async (uid: string, data: any) => {
+  const userRef = doc(db, "users", uid);
+  await updateDoc(userRef, data);
 };
