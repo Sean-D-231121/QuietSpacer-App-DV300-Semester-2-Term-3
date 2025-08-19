@@ -211,3 +211,67 @@ export const updateUserProfile = async (uid: string, data: any) => {
   const userRef = doc(db, "users", uid);
   await updateDoc(userRef, data);
 };
+export const addReviewToFirestore = async ({
+  place_id,
+  title,
+  description,
+  calm_score,
+}: {
+  place_id: string;
+  title: string;
+  description: string;
+  calm_score: number;
+}) => {
+  try {
+    // validate calm_score between 1–5
+    const score = Math.max(1, Math.min(5, calm_score));
+
+    const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";
+    const colRef = collection(db, "reviews");
+
+    const reviewDoc = {
+      user_id,
+      place_id,
+      title,
+      description,
+      calm_score: score,
+      createdAt: new Date().toISOString(),
+    };
+
+    const docRef = await addDoc(colRef, reviewDoc);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error("Error adding review to Firestore:", error);
+    return { success: false, error };
+  }
+};
+export type Review = {
+  id: string;
+  user_id: string;
+  place_id: string;
+  title: string;
+  description: string;
+  calm_score: number;
+  createdAt: string;
+};
+
+export const getReviewsForPlace = async (
+  place_id: string
+): Promise<Review[]> => {
+  try {
+    const q = query(
+      collection(db, "reviews"),
+      where("place_id", "==", place_id)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Omit<Review, "id">),
+    }));
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    return [];
+  }
+};
+
+

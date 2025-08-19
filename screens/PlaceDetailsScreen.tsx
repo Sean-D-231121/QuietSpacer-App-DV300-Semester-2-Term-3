@@ -6,12 +6,16 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import {
   addBookmarkToFirestore,
   removeBookmarkFromFirestore,
   getBookmarksFromFirestore,
+  addReviewToFirestore,
+  getReviewsForPlace,
+  Review,
 } from "../services/DbService";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -35,7 +39,41 @@ const PlaceDetails = () => {
   const [bookmarked, setBookmarked] = useState(false);
   const [address, setAddress] = useState<string>(""); // 👈 NEW
 
-  // check if already bookmarked
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewDesc, setReviewDesc] = useState("");
+  const [reviewScore, setReviewScore] = useState("3"); // default 3
+
+  const [reviews, setReviews] = useState<Review[]>([]);
+  
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!marker?.id) return;
+      const revs = await getReviewsForPlace(marker.id);
+      setReviews(revs);
+    };
+    fetchReviews();
+  }, [marker]);
+
+  // After adding a review, refresh the list:
+  const handleAddReview = async () => {
+    if (!marker?.id) return;
+    const result = await addReviewToFirestore({
+      place_id: marker.id,
+      title: reviewTitle,
+      description: reviewDesc,
+      calm_score: parseInt(reviewScore),
+    });
+    if (result.success) {
+      setReviewTitle("");
+      setReviewDesc("");
+      setReviewScore("3");
+      alert("Review added!");
+      // Refresh reviews
+      const revs = await getReviewsForPlace(marker.id);
+      setReviews(revs);
+    }
+  };
   useEffect(() => {
     const checkBookmark = async () => {
       const bookmarks = await getBookmarksFromFirestore();
@@ -155,33 +193,59 @@ const PlaceDetails = () => {
       </View>
 
       {/* Reviews */}
-      <Text style={styles.reviewHeader}>Reviews</Text>
-      <View style={styles.reviewCard}>
-        <View style={styles.reviewHeaderRow}>
-          <Image
-            source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
-            style={styles.avatar}
-          />
-          <Text style={styles.reviewTitle}>Wonderful and quiet....</Text>
-          <View style={styles.reviewRatingRow}>
-            <Text>3</Text>
-            <Feather
-              name="feather"
-              size={14}
-              color="gray"
-              style={{ marginLeft: 5 }}
-            />
-          </View>
-        </View>
-        <Text style={styles.reviewText}>
-          I love spending time in botanical gardens—they’re peaceful and full of
-          life. Walking among the flowers and towering trees helps me feel calm
-          and grounded. I enjoy reading the little signs and learning about
-          different plant species from around the world. There’s something
-          special about the quiet beauty of nature carefully arranged and cared
-          for.
-        </Text>
+      <View style={styles.reviewForm}>
+        <TextInput
+          style={styles.input}
+          placeholder="Title"
+          value={reviewTitle}
+          onChangeText={setReviewTitle}
+        />
+        <TextInput
+          style={[styles.input, { height: 80 }]}
+          placeholder="Description"
+          value={reviewDesc}
+          onChangeText={setReviewDesc}
+          multiline
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Calm Score (1-5)"
+          value={reviewScore}
+          keyboardType="numeric"
+          onChangeText={setReviewScore}
+        />
+        <TouchableOpacity style={styles.addButton} onPress={handleAddReview}>
+          <Text style={styles.addButtonText}>Add Review</Text>
+        </TouchableOpacity>
       </View>
+
+      <Text style={styles.reviewHeader}>Reviews</Text>
+      {reviews.length === 0 && (
+        <Text style={{  marginHorizontal: 20, marginBottom: 40 }}>
+          No reviews yet.
+        </Text>
+      )}
+      {reviews.map((review) => (
+        <View key={review.id} style={styles.reviewCard}>
+          <View style={styles.reviewHeaderRow}>
+            <Image
+              source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+              style={styles.avatar}
+            />
+            <Text style={styles.reviewTitle}>{review.title}</Text>
+            <View style={styles.reviewRatingRow}>
+              <Text>{review.calm_score}</Text>
+              <Feather
+                name="feather"
+                size={14}
+                color="gray"
+                style={{ marginLeft: 5 }}
+              />
+            </View>
+          </View>
+          <Text style={styles.reviewText}>{review.description}</Text>
+        </View>
+      ))}
     </ScrollView>
   );
 };
@@ -274,6 +338,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 20,
     padding: 15,
+    marginBottom: 30,
   },
   reviewHeaderRow: {
     flexDirection: "row",
@@ -298,5 +363,30 @@ const styles = StyleSheet.create({
   reviewText: {
     fontSize: 14,
     color: "#333",
+  },
+  reviewForm: {
+    marginHorizontal: 20,
+    marginTop: 15,
+    backgroundColor: "#f0f0f0",
+    padding: 15,
+    borderRadius: 15,
+  },
+  input: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  addButton: {
+    backgroundColor: "#455A64",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
