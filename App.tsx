@@ -17,6 +17,7 @@ import { auth } from "./firebase";
 import { logout } from "./services/authService";
 import "react-native-gesture-handler"; // top of file
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import MoodDashboard from "./screens/moodDashboard";
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
@@ -51,14 +52,11 @@ function HomeStack() {
 function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Home">
-      <Drawer.Screen
-        name="Home"
-        component={HomeStack}
-        
-      />
+      <Drawer.Screen name="Home" component={HomeStack} />
 
       <Drawer.Screen name="Bookmarks" component={Bookmarks} />
       <Drawer.Screen name="Profile" component={Profile} />
+      <Drawer.Screen name="Dashboard" component={MoodDashboard} />
       <Drawer.Screen name="Sign Out" component={SignOutScreen} />
     </Drawer.Navigator>
   );

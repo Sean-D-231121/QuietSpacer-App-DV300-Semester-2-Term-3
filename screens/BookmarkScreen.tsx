@@ -8,20 +8,36 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import SwipeButton from "rn-swipe-button";
 
-import { getBookmarksFromFirestore, removeBookmarkFromFirestore } from "../services/DbService";
+import {
+  getBookmarksFromFirestore,
+  removeBookmarkFromFirestore,
+} from "../services/DbService";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
+import * as Location from "expo-location";
 
 type RootStackParamList = {
   Home: { animateTo: { latitude: number; longitude: number } };
-
 };
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
-
+const getAddressFromCoords = async (lat: number, long: number) => {
+  try {
+    const geocode = await Location.reverseGeocodeAsync({
+      latitude: lat,
+      longitude: long,
+    });
+    if (geocode.length > 0) {
+      const { city, region, country } = geocode[0];
+      return `${city || region || "Unknown"}, ${country || ""}`;
+    }
+  } catch (err) {
+    console.error("Error reverse geocoding:", err);
+  }
+  return `(${lat.toFixed(3)}, ${long.toFixed(3)})`; // fallback
+};
 
 const Bookmarks = () => {
   const [places, setPlaces] = useState<any[]>([]);
@@ -29,18 +45,26 @@ const Bookmarks = () => {
 
   const fetchBookmarks = async () => {
     const bookmarks = await getBookmarksFromFirestore();
-    setPlaces(bookmarks);
-  };
-
-    useFocusEffect(
-      React.useCallback(() => {
-        fetchBookmarks();
-      }, [])
+    const getLocation = await Promise.all(
+      bookmarks.map(async (p) => {
+        if (p.lat && p.long) {
+          const address = await getAddressFromCoords(p.lat, p.long);
+          return { ...p, location: address };
+        }
+        return p;
+      })
     );
 
-  
+    setPlaces(getLocation);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchBookmarks();
+    }, [])
+  );
+
   const handleLongPress = async (place: any) => {
-    // Remove bookmark and refresh list
     await removeBookmarkFromFirestore(place.id);
     fetchBookmarks();
   };
@@ -105,8 +129,7 @@ const Bookmarks = () => {
   );
 };
 
-
-export default Bookmarks
+export default Bookmarks;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff8e7",

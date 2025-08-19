@@ -7,42 +7,76 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { Feather, MaterialIcons, Entypo } from "@expo/vector-icons";
-import { addBookmarkToFirestore, removeBookmarkFromFirestore, getBookmarksFromFirestore } from "../services/DbService";
-import { useRoute, useNavigation} from "@react-navigation/native";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+import {
+  addBookmarkToFirestore,
+  removeBookmarkFromFirestore,
+  getBookmarksFromFirestore,
+} from "../services/DbService";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import SwipeButton from "rn-swipe-button";
- type RootStackParamList = {
+import * as Location from "expo-location"; // 👈 NEW
+
+type RootStackParamList = {
   Homescreen: { animateTo: { latitude: number; longitude: number } };
-
 };
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Homescreen">;
 
-const PlaceDetails = () =>{
-  
+type NavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Homescreen"
+>;
+
+const PlaceDetails = () => {
   const route = useRoute();
   const navigation = useNavigation<NavigationProp>();
-  const marker = route.params?.marker;
+  const marker: any = route.params?.marker;
+
   const [bookmarked, setBookmarked] = useState(false);
+  const [address, setAddress] = useState<string>(""); // 👈 NEW
 
-   useEffect(() => {
-     // Check if this place is already bookmarked
-     const checkBookmark = async () => {
-       const bookmarks = await getBookmarksFromFirestore();
-       setBookmarked(bookmarks.some((b) => b.id === marker.id));
-     };
-     checkBookmark();
-   }, [marker]);
+  // check if already bookmarked
+  useEffect(() => {
+    const checkBookmark = async () => {
+      const bookmarks = await getBookmarksFromFirestore();
+      setBookmarked(bookmarks.some((b) => b.id === marker.id));
+    };
+    checkBookmark();
+  }, [marker]);
 
-   const handleBookmark = async () => {
-     if (bookmarked) {
-       await removeBookmarkFromFirestore(marker.id);
-       setBookmarked(false);
-     } else {
-       await addBookmarkToFirestore(marker);
-       setBookmarked(true);
-     }
-   };
+  // reverse geocode to get readable address
+  useEffect(() => {
+    const getAddress = async () => {
+      if (marker?.lat && marker?.long) {
+        try {
+          const geocode = await Location.reverseGeocodeAsync({
+            latitude: marker.lat,
+            longitude: marker.long,
+          });
+
+          if (geocode.length > 0) {
+            const { city, region, country } = geocode[0];
+            setAddress(`${city || region || "Unknown"}, ${country || ""}`);
+          }
+        } catch (err) {
+          console.warn("Reverse geocode failed:", err);
+          setAddress(`(${marker.lat.toFixed(3)}, ${marker.long.toFixed(3)})`);
+        }
+      }
+    };
+    getAddress();
+  }, [marker]);
+
+  const handleBookmark = async () => {
+    if (bookmarked) {
+      await removeBookmarkFromFirestore(marker.id);
+      setBookmarked(false);
+    } else {
+      await addBookmarkToFirestore(marker);
+      setBookmarked(true);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Image
@@ -56,20 +90,15 @@ const PlaceDetails = () =>{
 
       {/* Header Row */}
       <View style={styles.headerRow}>
-        <TouchableOpacity style={styles.menuIcon}>
-          <Feather name="menu" size={24} color="white" />
+        <TouchableOpacity onPress={handleBookmark}>
+          <MaterialIcons
+            name={bookmarked ? "bookmark" : "bookmark-border"}
+            size={24}
+            color={bookmarked ? "#F28B82" : "#444"}
+            style={{ marginRight: 12 }}
+          />
         </TouchableOpacity>
-        <View style={styles.iconRow}>
-          <TouchableOpacity onPress={handleBookmark}>
-            <MaterialIcons
-              name={bookmarked ? "bookmark" : "bookmark-border"}
-              size={24}
-              color={bookmarked ? "#F28B82" : "#444"}
-              style={{ marginRight: 12 }}
-            />
-          </TouchableOpacity>
-          <Feather name="share-2" size={20} color="#444" />
-        </View>
+        <Feather name="share-2" size={20} color="#444" />
       </View>
 
       {/* Title Section */}
@@ -78,10 +107,10 @@ const PlaceDetails = () =>{
           {marker?.title || marker?.name || "Botanical Garden"}
         </Text>
         <Text style={styles.subtitle}>
-          {marker?.category_name || "Pretoria"}
+          {marker?.category_name || "Unknown Category"}
         </Text>
         <Text style={styles.location}>
-          📍 {marker?.location || "Cussonia Avenue, Brummeria"}
+          📍 {address || "Loading location..."}
         </Text>
         <Text style={styles.price}>
           Price : {marker?.price ? `R${marker.price}` : "N/A"}
@@ -123,7 +152,6 @@ const PlaceDetails = () =>{
             containerStyles={{ borderRadius: 25, height: 50 }}
           />
         </View>
-        
       </View>
 
       {/* Reviews */}
@@ -157,8 +185,7 @@ const PlaceDetails = () =>{
     </ScrollView>
   );
 };
-export default PlaceDetails
-
+export default PlaceDetails;
 
 const styles = StyleSheet.create({
   container: { backgroundColor: "#fff8e7" },
@@ -170,7 +197,7 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -273,4 +300,3 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 });
-

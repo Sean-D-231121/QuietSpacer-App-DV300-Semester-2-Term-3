@@ -25,6 +25,18 @@ export const getCategoriesFromFirestore = async () => {
     return { success: false, error };
   }
 };
+export type Place = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  user_id: string;
+  lat: number;
+  long: number;
+  category_name: string;
+  image_url?: string;
+};
+
 
 export const addPlaceToFirestore = async ({
   name,
@@ -64,17 +76,25 @@ export const addPlaceToFirestore = async ({
 };
 
 // Fetch all places from Firestore
-export const getAllPlacesFromFirestore = async () => {
+export const getAllPlacesFromFirestore = async (): Promise<{
+  success: boolean;
+  places?: Place[];
+  error?: any;
+}> => {
   try {
     const colRef = collection(db, "places");
     const snapshot = await getDocs(colRef);
-    const places = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const places: Place[] = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Omit<Place, "id">),
+    }));
     return { success: true, places };
   } catch (error) {
     console.error("Error fetching places from Firestore:", error);
     return { success: false, error };
   }
 };
+
 
 export const addBookmarkToFirestore = async (place: any) => {
   const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";
