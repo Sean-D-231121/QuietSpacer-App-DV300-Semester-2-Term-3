@@ -10,6 +10,7 @@ import {
   getDoc,
   updateDoc,
 } from "firebase/firestore";
+import { uploadPlaceImage } from "./BucketService";
 
 export const getCategoriesFromFirestore = async () => {
   try {
@@ -38,6 +39,7 @@ export type Place = {
 };
 
 
+
 export const addPlaceToFirestore = async ({
   name,
   description,
@@ -45,7 +47,7 @@ export const addPlaceToFirestore = async ({
   lat,
   long,
   category_name,
-  image_url = "",
+  image_uri = "",
 }: {
   name: string;
   description: string;
@@ -53,11 +55,12 @@ export const addPlaceToFirestore = async ({
   lat: number;
   long: number;
   category_name: string;
-  image_url?: string;
+  image_uri?: string;
 }) => {
   try {
     const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";
     const colRef = collection(db, "places");
+
     const docRef = await addDoc(colRef, {
       name,
       description,
@@ -66,14 +69,31 @@ export const addPlaceToFirestore = async ({
       lat,
       long,
       category_name,
-      image_url,
+      image_url: "",
     });
-    return { success: true, id: docRef.id };
+
+    console.log("✅ Place doc created with ID:", docRef.id);
+
+    let downloadURL = "";
+    if (image_uri) {
+      downloadURL = await uploadPlaceImage(image_uri, docRef.id);
+
+      if (downloadURL) {
+        const placeDocRef = doc(db, "places", docRef.id);
+        await updateDoc(placeDocRef, { image_url: downloadURL });
+        console.log("✅ Firestore updated with image:", downloadURL);
+      } else {
+        console.warn("⚠️ No downloadURL returned from uploadPlaceImage");
+      }
+    }
+
+    return { success: true, id: docRef.id, image_url: downloadURL };
   } catch (error) {
-    console.error("Error adding place to Firestore:", error);
+    console.error("❌ Error adding place to Firestore:", error);
     return { success: false, error };
   }
 };
+
 
 // Fetch all places from Firestore
 export const getAllPlacesFromFirestore = async (): Promise<{
