@@ -21,6 +21,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import SwipeButton from "rn-swipe-button";
 import * as Location from "expo-location"; // 👈 NEW
+import { Dropdown } from "react-native-element-dropdown";
 
 type RootStackParamList = {
   Homescreen: { animateTo: { latitude: number; longitude: number } };
@@ -41,10 +42,10 @@ const PlaceDetails = () => {
 
   const [reviewTitle, setReviewTitle] = useState("");
   const [reviewDesc, setReviewDesc] = useState("");
-  const [reviewScore, setReviewScore] = useState("3"); // default 3
+  const [reviewScore, setReviewScore] = useState("1"); // default 3
+  const [overallCalmScore, setOverallCalmScore] = useState<number | null>(null);
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -81,6 +82,17 @@ const PlaceDetails = () => {
     };
     checkBookmark();
   }, [marker]);
+
+  useEffect(() => {
+    if (reviews.length === 0) {
+      setOverallCalmScore(null);
+    } else {
+      const total = reviews.reduce((sum, r) => sum + r.calm_score, 0);
+      const avg = total / reviews.length;
+      setOverallCalmScore(parseFloat(avg.toFixed(1))); // 1 decimal
+    }
+  }, [reviews]);
+
 
   // reverse geocode to get readable address
   useEffect(() => {
@@ -153,6 +165,19 @@ const PlaceDetails = () => {
         <Text style={styles.price}>
           Price : {marker?.price ? `R${marker.price}` : "N/A"}
         </Text>
+        {overallCalmScore !== null && (
+          <View style={{ marginHorizontal: 20, marginBottom: 10 }}>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: "#444" }}>
+              Calm Score: {overallCalmScore}{" "}
+              <Feather
+                name="feather"
+                size={14}
+                color="gray"
+                style={{ marginLeft: 5 }}
+              />
+            </Text>
+          </View>
+        )}
         <View style={styles.descriptionBox}>
           <Text style={styles.description}>
             {marker?.description ||
@@ -207,12 +232,20 @@ const PlaceDetails = () => {
           onChangeText={setReviewDesc}
           multiline
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Calm Score (1-5)"
+        <Dropdown
+          style={styles.dropdown}
+          data={[
+            { label: "1 - Very Low", value: "1" },
+            { label: "2 - Low", value: "2" },
+            { label: "3 - Medium", value: "3" },
+            { label: "4 - High", value: "4" },
+            { label: "5 - Very High", value: "5" },
+          ]}
+          labelField="label"
+          valueField="value"
+          placeholder="Select Calm Score"
           value={reviewScore}
-          keyboardType="numeric"
-          onChangeText={setReviewScore}
+          onChange={(item) => setReviewScore(item.value)}
         />
         <TouchableOpacity style={styles.addButton} onPress={handleAddReview}>
           <Text style={styles.addButtonText}>Add Review</Text>
@@ -221,7 +254,7 @@ const PlaceDetails = () => {
 
       <Text style={styles.reviewHeader}>Reviews</Text>
       {reviews.length === 0 && (
-        <Text style={{  marginHorizontal: 20, marginBottom: 40 }}>
+        <Text style={{ marginHorizontal: 20, marginBottom: 40 }}>
           No reviews yet.
         </Text>
       )}
@@ -259,18 +292,21 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
+  dropdown: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 10,
-    marginTop: -40,
-  },
-  menuIcon: {
-    backgroundColor: "#F28B82",
-    padding: 10,
-    borderRadius: 10,
+    
   },
   iconRow: {
     flexDirection: "row",

@@ -11,15 +11,19 @@ import LoginScreen from "./screens/LoginScreen";
 import PlaceDetails from "./screens/PlaceDetailsScreen";
 import Profile from "./screens/ProfileScreen";
 import Bookmarks from "./screens/BookmarkScreen";
-
+import * as SplashScreen from "expo-splash-screen";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { logout } from "./services/authService";
 import "react-native-gesture-handler"; // top of file
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MoodDashboard from "./screens/moodDashboard";
+import SplashScreenComponent from "./screens/SplashScreen";
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
+
+
+
 
 function SignOutScreen() {
   useEffect(() => {
@@ -64,36 +68,49 @@ function DrawerNavigator() {
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsLoggedIn(true);
-        console.log("User is logged in");
-      } else {
-        setIsLoggedIn(false);
-        console.log("User is logged out");
+    const prepareApp = async () => {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+
+        // load fonts, auth state, etc.
+        await new Promise<void>((resolve) => {
+          onAuthStateChanged(auth, (user) => {
+            setIsLoggedIn(!!user);
+            resolve();
+          });
+        });
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+        await SplashScreen.hideAsync();
       }
-    });
+    };
+
+    prepareApp();
   }, []);
 
+
+  if (!appIsReady) {
+    return null; // custom splash UI
+  }
+
   return (
-    
-
-
     <GestureHandlerRootView style={{ flex: 1 }}>
-    <NavigationContainer>
-      {isLoggedIn ? (
-        <DrawerNavigator />
-        
-      ) : (
-        <Stack.Navigator>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="SignUp" component={SignupScreen} />
-        </Stack.Navigator>
-      )}
-      <StatusBar style="auto" />
-    </NavigationContainer>
+      <NavigationContainer>
+        {isLoggedIn ? (
+          <DrawerNavigator />
+        ) : (
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="SignUp" component={SignupScreen} />
+          </Stack.Navigator>
+        )}
+        <StatusBar style="auto" />
+      </NavigationContainer>
     </GestureHandlerRootView>
   );
 }
