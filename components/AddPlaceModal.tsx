@@ -7,12 +7,10 @@ import {
   TextInput,
   Image,
   StyleSheet,
-  Platform,
+  Pressable,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import SwipeButton from "rn-swipe-button";
 import * as ImagePicker from "expo-image-picker";
-import RNPickerSelect from "react-native-picker-select";
 import { Dropdown } from "react-native-element-dropdown";
 
 type Props = {
@@ -60,7 +58,6 @@ const AddPlaceModal = ({
       alert("Please enter a place name.");
       return;
     }
-
     if (!coords) {
       alert("Coordinates missing. Try again.");
       return;
@@ -86,7 +83,7 @@ const AddPlaceModal = ({
       lat: newMarker.latitude,
       long: newMarker.longitude,
       category_name: placeCategory,
-      image_url: placeImage,
+      image_uri: placeImage,
     });
 
     if (result.success) {
@@ -95,7 +92,6 @@ const AddPlaceModal = ({
       alert("Error saving place.");
     }
 
-    // reset
     setPlaceName("");
     setPlacePrice("");
     setPlaceDescription("");
@@ -106,13 +102,26 @@ const AddPlaceModal = ({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPressOut={onClose}
-      >
-        <TouchableOpacity activeOpacity={1} style={styles.content}>
+      <View style={styles.overlay}>
+        {/* Backdrop to close when tapping OUTSIDE the card */}
+        <Pressable style={styles.backdrop} onPress={onClose} />
+
+        {/* Card content – taps inside here won't close the modal */}
+        <View style={styles.content}>
           <Text style={styles.title}>Add New Place</Text>
+
+          {/* Tappable image area */}
+          <TouchableOpacity
+            onPress={pickImage}
+            activeOpacity={0.7}
+            style={styles.imagePicker}
+          >
+            {placeImage ? (
+              <Image source={{ uri: placeImage }} style={styles.imageFull} />
+            ) : (
+              <Text style={styles.imagePlaceholder}>Tap to select photo</Text>
+            )}
+          </TouchableOpacity>
 
           <TextInput
             placeholder="Place name"
@@ -147,13 +156,6 @@ const AddPlaceModal = ({
             />
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={pickImage}>
-            <Text style={styles.buttonText}>Select Photo</Text>
-          </TouchableOpacity>
-          {placeImage ? (
-            <Image source={{ uri: placeImage }} style={styles.preview} />
-          ) : null}
-
           <View style={{ width: "100%", marginVertical: 10 }}>
             <SwipeButton
               title="Swipe to Save"
@@ -165,8 +167,8 @@ const AddPlaceModal = ({
               containerStyles={{ borderRadius: 25, height: 50 }}
             />
           </View>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 };
@@ -179,12 +181,18 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
     alignItems: "center",
+    padding: 16,
+  },
+  // full-screen invisible click target behind the card
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
   },
   content: {
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 20,
     width: "100%",
+    maxWidth: 520,
     alignItems: "center",
   },
   title: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
@@ -195,22 +203,7 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 10,
     marginBottom: 10,
-  },
-  button: {
-    backgroundColor: "#455A64",
-    paddingVertical: 10,
-    paddingHorizontal: 25,
-    borderRadius: 20,
-  },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  preview: { width: 80, height: 80, marginBottom: 10, borderRadius: 10 },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    width: "100%",
-    marginBottom: 10,
-    overflow: "hidden", // makes border radius work on Picker
+    backgroundColor: "#fff",
   },
   dropdown: {
     borderWidth: 1,
@@ -218,5 +211,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 14,
+    backgroundColor: "#fff",
+  },
+
+  // Image picker styles
+  imagePicker: {
+    width: "100%",
+    height: 160,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#f9f9f9",
+    marginBottom: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  imageFull: {
+    width: "100%",
+    height: "100%",
+  },
+  imagePlaceholder: {
+    color: "#888",
+    fontSize: 14,
   },
 });

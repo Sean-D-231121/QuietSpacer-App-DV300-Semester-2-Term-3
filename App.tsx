@@ -19,6 +19,8 @@ import "react-native-gesture-handler"; // top of file
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MoodDashboard from "./screens/moodDashboard";
 import SplashScreenComponent from "./screens/SplashScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import OnboardingScreen from "./screens/OnBoardingScreen";
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
@@ -69,13 +71,15 @@ function DrawerNavigator() {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [appIsReady, setAppIsReady] = useState(false);
+  const [firstLaunch, setFirstLaunch] = useState<boolean | null>(null);
+  const [showCustomSplash, setShowCustomSplash] = useState(true);
 
   useEffect(() => {
     const prepareApp = async () => {
       try {
         await SplashScreen.preventAutoHideAsync();
 
-        // load fonts, auth state, etc.
+        // simulate loading fonts/auth
         await new Promise<void>((resolve) => {
           onAuthStateChanged(auth, (user) => {
             setIsLoggedIn(!!user);
@@ -93,15 +97,46 @@ export default function App() {
     prepareApp();
   }, []);
 
+  useEffect(() => {
+    if (appIsReady) {
+      // show custom splash for 2s
+      const timer = setTimeout(() => {
+        setShowCustomSplash(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [appIsReady]);
 
-  if (!appIsReady) {
-    return null; // custom splash UI
+  useEffect(() => {
+    const checkFirstLaunch = async () => {
+      const hasLaunched = await AsyncStorage.getItem("alreadyLaunched");
+      if (hasLaunched === null) {
+        await AsyncStorage.setItem("alreadyLaunched", "true");
+        setFirstLaunch(true);
+      } else {
+        setFirstLaunch(false);
+      }
+    };
+    checkFirstLaunch();
+  }, []);
+  if (!appIsReady || firstLaunch === null) {
+    return null; // still waiting for async stuff
+  }
+
+  if (showCustomSplash) {
+    return <SplashScreenComponent />;
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
-        {isLoggedIn ? (
+        {firstLaunch ? (
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="SignUp" component={SignupScreen} />
+          </Stack.Navigator>
+        ) : isLoggedIn ? (
           <DrawerNavigator />
         ) : (
           <Stack.Navigator screenOptions={{ headerShown: false }}>

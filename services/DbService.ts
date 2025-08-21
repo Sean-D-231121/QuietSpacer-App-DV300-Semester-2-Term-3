@@ -72,8 +72,6 @@ export const addPlaceToFirestore = async ({
       image_url: "",
     });
 
-    console.log("✅ Place doc created with ID:", docRef.id);
-
     let downloadURL = "";
     if (image_uri) {
       downloadURL = await uploadPlaceImage(image_uri, docRef.id);
@@ -81,7 +79,6 @@ export const addPlaceToFirestore = async ({
       if (downloadURL) {
         const placeDocRef = doc(db, "places", docRef.id);
         await updateDoc(placeDocRef, { image_url: downloadURL });
-        console.log("✅ Firestore updated with image:", downloadURL);
       } else {
         console.warn("⚠️ No downloadURL returned from uploadPlaceImage");
       }
@@ -89,7 +86,7 @@ export const addPlaceToFirestore = async ({
 
     return { success: true, id: docRef.id, image_url: downloadURL };
   } catch (error) {
-    console.error("❌ Error adding place to Firestore:", error);
+    console.error("Error adding place to Firestore:", error);
     return { success: false, error };
   }
 };
@@ -201,9 +198,9 @@ export const getUserProfile = async (
       return null;
     }
 
-    const data = docSnap.data() as Omit<UserProfile, "moods">; // 👈 force Firestore data to correct type
+    const data = docSnap.data() as Omit<UserProfile, "moods">; 
 
-    // Fetch moods by this user
+    
     const moodsQuery = query(
       collection(db, "moods"),
       where("user_id", "==", userId)
@@ -243,7 +240,7 @@ export const addReviewToFirestore = async ({
   calm_score: number;
 }) => {
   try {
-    // validate calm_score between 1–5
+    
     const score = Math.max(1, Math.min(5, calm_score));
 
     const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";

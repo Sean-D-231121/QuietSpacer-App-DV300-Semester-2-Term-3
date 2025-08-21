@@ -22,7 +22,7 @@ export const SignUp = async (
   email: string,
   password: string,
   checkPassword: string,
-  profileUri?: string // 👈 add optional image URI
+  profileUri?: string 
 ) => {
   if (!username || !email || !password || !checkPassword) {
     alert("Please fill in all fields");
