@@ -240,10 +240,12 @@ export const addReviewToFirestore = async ({
   calm_score: number;
 }) => {
   try {
-    
     const score = Math.max(1, Math.min(5, calm_score));
-
     const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";
+
+    // 🔹 Get the user profile
+    const userProfile = await getUserProfile(user_id);
+
     const colRef = collection(db, "reviews");
 
     const reviewDoc = {
@@ -253,6 +255,10 @@ export const addReviewToFirestore = async ({
       description,
       calm_score: score,
       createdAt: new Date().toISOString(),
+      username: userProfile?.username || "Anonymous",
+      profile_pic:
+        userProfile?.profile_pic ||
+        "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
     };
 
     const docRef = await addDoc(colRef, reviewDoc);
@@ -262,6 +268,7 @@ export const addReviewToFirestore = async ({
     return { success: false, error };
   }
 };
+
 export type Review = {
   id: string;
   user_id: string;
@@ -270,6 +277,8 @@ export type Review = {
   description: string;
   calm_score: number;
   createdAt: string;
+  username?: string;
+  profile_pic?: string;
 };
 
 export const getReviewsForPlace = async (

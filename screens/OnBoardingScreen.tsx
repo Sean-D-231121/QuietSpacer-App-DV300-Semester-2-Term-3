@@ -24,7 +24,7 @@ const OnboardingScreen = ({ navigation }: any) => {
         {
           backgroundColor: "#e9bcbe",
           image: <Image source={require("../assets/logo.png")} />,
-          title: "Add you favourite quiet places",
+          title: "Add your favourite quiet places",
           subtitle:
             "Share your favorite quiet spots with the community. So they can enjoy them too.",
         },

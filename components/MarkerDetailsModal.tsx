@@ -77,12 +77,17 @@ const MarkerDetailsModal = ({
               contentContainerStyle={styles.content}
               keyboardShouldPersistTaps="handled"
             >
-              {marker.image_url && (
-                <Image
-                  source={{ uri: marker.image_url }}
-                  style={styles.image}
-                />
-              )}
+              <View style={styles.imageContainer}>
+                {marker.image_url ? (
+                  <Image
+                    source={{ uri: marker.image_url }}
+                    style={styles.imageFull}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text style={{ color: "#455A64" }}>No image available</Text>
+                )}
+              </View>
               <Text style={styles.title}>{displayTitle}</Text>
               {marker.description && (
                 <Text style={styles.description}>{marker.description}</Text>
@@ -95,17 +100,25 @@ const MarkerDetailsModal = ({
                     key={i}
                     style={[
                       styles.moodOption,
-                      selectedMood === m && { backgroundColor: "#FFD6A5" },
+                      selectedMood === m && { backgroundColor: "#5f636d" },
                     ]}
                     onPress={() => setSelectedMood(m)}
                   >
-                    <Text style={styles.moodText}>{m}</Text>
+                    <Text
+                      style={[
+                        styles.moodText,
+                        selectedMood === m && { color: "#fff" },
+                      ]}
+                    >
+                      {m}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
               <TextInput
                 style={styles.input}
+                placeholderTextColor={"#5f5f5fff"}
                 placeholder="Describe your mood..."
                 value={moodDescription}
                 onChangeText={setMoodDescription}
@@ -165,7 +178,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   content: {
-    backgroundColor: "#fff",
+    backgroundColor: "#fdf5e6",
     padding: 24,
     borderRadius: 20,
     width: "90%",
@@ -199,7 +212,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 15,
-    backgroundColor: "#eee",
+    backgroundColor: "#add8e6",
     margin: 5,
   },
   moodText: { fontSize: 14 },
@@ -212,6 +225,23 @@ const styles = StyleSheet.create({
     minHeight: 60,
     marginBottom: 12,
     textAlignVertical: "top",
+    backgroundColor: "#add8e6",
   },
   buttonText: { color: "#fff", fontWeight: "bold" },
+  imageContainer: {
+    width: 300,
+    height: 160,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#add8e6",
+    marginBottom: 15,
+    overflow: "hidden",
+    alignSelf: "center",
+    maxWidth: 520,
+  },
+  imageFull: {
+    width: "100%",
+    height: "100%",
+  },
 });

@@ -8,6 +8,7 @@ import {
   Image,
   StyleSheet,
   Pressable,
+  KeyboardAvoidingView,
 } from "react-native";
 import SwipeButton from "rn-swipe-button";
 import * as ImagePicker from "expo-image-picker";
@@ -128,6 +129,7 @@ const AddPlaceModal = ({
             style={styles.input}
             value={placeName}
             onChangeText={setPlaceName}
+            placeholderTextColor={"#455A64"}
           />
           <TextInput
             placeholder="Price"
@@ -135,13 +137,20 @@ const AddPlaceModal = ({
             keyboardType="numeric"
             value={placePrice}
             onChangeText={setPlacePrice}
+            placeholderTextColor={"#455A64"}
+            returnKeyType="done"
+            blurOnSubmit={true} 
           />
+
           <TextInput
             placeholder="Description"
             style={[styles.input, { height: 60 }]}
+            blurOnSubmit={true}
+            returnKeyType="done"
             multiline
             value={placeDescription}
             onChangeText={setPlaceDescription}
+            placeholderTextColor={"#455A64"}
           />
 
           <View style={{ width: "100%", marginBottom: 10 }}>
@@ -188,7 +197,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   content: {
-    backgroundColor: "#fff",
+    backgroundColor: "#fdf5e6",
     padding: 20,
     borderRadius: 20,
     width: "100%",
@@ -203,7 +212,8 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 10,
     marginBottom: 10,
-    backgroundColor: "#fff",
+    color: "#455A64",
+    backgroundColor: "#add8e6",
   },
   dropdown: {
     borderWidth: 1,
@@ -211,7 +221,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 14,
-    backgroundColor: "#fff",
+    backgroundColor: "#add8e6",
+    color: "#455A64",
   },
 
   // Image picker styles
@@ -221,7 +232,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#ccc",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#add8e6",
     marginBottom: 15,
     justifyContent: "center",
     alignItems: "center",
@@ -232,7 +243,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   imagePlaceholder: {
-    color: "#888",
+    color: "#455A64",
     fontSize: 14,
   },
 });

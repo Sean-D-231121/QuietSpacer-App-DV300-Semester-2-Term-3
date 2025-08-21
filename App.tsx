@@ -15,7 +15,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { logout } from "./services/authService";
-import "react-native-gesture-handler"; // top of file
+import "react-native-gesture-handler"; // must be at top
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MoodDashboard from "./screens/moodDashboard";
 import SplashScreenComponent from "./screens/SplashScreen";
@@ -24,14 +24,10 @@ import OnboardingScreen from "./screens/OnBoardingScreen";
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-
-
-
 function SignOutScreen() {
   useEffect(() => {
     logout();
   }, []);
-
   return <View />;
 }
 function HomeStack() {
@@ -43,7 +39,7 @@ function HomeStack() {
         component={PlaceDetails}
         listeners={({ navigation }) => ({
           blur: () => {
-            // When leaving Home, reset stack so it goes back to Homescreen
+            // Reset navigation stack when leaving PlaceDetails
             navigation.reset({
               index: 0,
               routes: [{ name: "Homescreen" }],
@@ -59,7 +55,6 @@ function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Home">
       <Drawer.Screen name="Home" component={HomeStack} />
-
       <Drawer.Screen name="Bookmarks" component={Bookmarks} />
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Dashboard" component={MoodDashboard} />
@@ -79,7 +74,6 @@ export default function App() {
       try {
         await SplashScreen.preventAutoHideAsync();
 
-        // simulate loading fonts/auth
         await new Promise<void>((resolve) => {
           onAuthStateChanged(auth, (user) => {
             setIsLoggedIn(!!user);
@@ -99,10 +93,9 @@ export default function App() {
 
   useEffect(() => {
     if (appIsReady) {
-      // show custom splash for 2s
       const timer = setTimeout(() => {
         setShowCustomSplash(false);
-      }, 2000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [appIsReady]);
@@ -110,7 +103,7 @@ export default function App() {
   useEffect(() => {
     const checkFirstLaunch = async () => {
       const hasLaunched = await AsyncStorage.getItem("alreadyLaunched");
-      if (hasLaunched === null) {
+      if (hasLaunched != null) {
         await AsyncStorage.setItem("alreadyLaunched", "true");
         setFirstLaunch(true);
       } else {
@@ -120,7 +113,7 @@ export default function App() {
     checkFirstLaunch();
   }, []);
   if (!appIsReady || firstLaunch === null) {
-    return null; // still waiting for async stuff
+    return null;
   }
 
   if (showCustomSplash) {
@@ -130,14 +123,14 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
-        {firstLaunch ? (
+        { isLoggedIn ? (
+          <DrawerNavigator />
+        ) :firstLaunch ? (
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="SignUp" component={SignupScreen} />
           </Stack.Navigator>
-        ) : isLoggedIn ? (
-          <DrawerNavigator />
         ) : (
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={LoginScreen} />

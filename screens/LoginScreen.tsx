@@ -6,9 +6,17 @@ import { login } from "../services/authService";
 const LoginScreen = ({navigation} :any) =>{
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const handleLogin = () =>{
-        login(email,password)
-    }
+    const handleLogin = async () => {
+      try {
+        await login(email, password);
+      } catch (err: any) {
+        Alert.alert(
+          "Login Failed",
+          err.message || "Please check your details."
+        );
+      }
+    };
+
     return (
       <SafeAreaView style={SignUpstyles.container}>
         {/* Logo */}

@@ -3,19 +3,21 @@ import {auth, db} from "../firebase"
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { uploadProfileImage } from "./BucketService";
 
-export const login = (email:string, password: string) =>{
-signInWithEmailAndPassword(auth, email, password )
-  .then((userCredential) => {
-    // Signed in
-    const user = userCredential.user;
-    console.log("Logged in user: ", user.email)
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-  });
-}
+export const login = async (email: string, password: string) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    console.log("Logged in user: ", userCredential.user.email);
+    return userCredential.user;
+  } catch (error: any) {
+    console.error("Login error:", error);
+    throw error; 
+  }
+};
+
 
 export const SignUp = async (
   username: string,

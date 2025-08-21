@@ -262,10 +262,19 @@ const PlaceDetails = () => {
         <View key={review.id} style={styles.reviewCard}>
           <View style={styles.reviewHeaderRow}>
             <Image
-              source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+              source={{
+                uri:
+                  review.profile_pic ||
+                  "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
+              }}
               style={styles.avatar}
             />
-            <Text style={styles.reviewTitle}>{review.title}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.reviewTitle}>{review.title}</Text>
+              <Text style={{ fontSize: 12, color: "#666" }}>
+                {review.username || "Anonymous"}
+              </Text>
+            </View>
             <View style={styles.reviewRatingRow}>
               <Text>{review.calm_score}</Text>
               <Feather
