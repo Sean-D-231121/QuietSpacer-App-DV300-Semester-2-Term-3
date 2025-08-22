@@ -10,36 +10,38 @@ const OnboardingScreen = ({ navigation }: any) => {
       onDone={() => navigation.replace("Login")}
       pages={[
         {
-          backgroundColor: "#fff",
+          backgroundColor: "#fdf5e6",
           image: <Image source={require("../assets/logo.png")} />,
           title: "Welcome to QuietSpacer",
           subtitle: "Find your quiet spaces easily.",
         },
         {
-          backgroundColor: "#fdeb93",
+          backgroundColor: "#add8e6",
           image: <Image source={require("../assets/logo.png")} />,
           title: "Bookmark Places",
-          subtitle: "Save your favorite locations for later.",
+          subtitle:
+            "Save your favorite locations for later by clicking on bookmark when looking at place",
         },
         {
           backgroundColor: "#e9bcbe",
           image: <Image source={require("../assets/logo.png")} />,
           title: "Add your favourite quiet places",
           subtitle:
-            "Share your favorite quiet spots with the community. So they can enjoy them too.",
+            "Share your favorite quiet spots with the community. So they can enjoy them too. To do this long press on map to add your area",
         },
         {
-          backgroundColor: "#e9bcbe",
+          backgroundColor: "#5f636db0",
           image: <Image source={require("../assets/logo.png")} />,
           title: "Track Your Mood",
-          subtitle: "Log how you feel in different places.",
+          subtitle:
+            "Log how you feel in different places. Click on place select how you feel at that moment.",
         },
         {
-          backgroundColor: "#e9bcbe",
+          backgroundColor: "#fca5a5",
           image: <Image source={require("../assets/logo.png")} />,
           title: "Give them a calm score",
           subtitle:
-            "Rate how calming a place is for you. Help others find their quiet space.",
+            "Rate how calming a place is for you when reviewing place. Help others find their quiet space.",
         },
       ]}
     />
