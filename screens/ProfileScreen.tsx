@@ -20,6 +20,7 @@ const ProfileScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [profilePic, setProfilePic] = useState("");
+  const [bio, setBio] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -30,6 +31,7 @@ const ProfileScreen = () => {
         setUsername(userProfile.username || "");
         setEmail(userProfile.email || "");
         setProfilePic(userProfile.profile_pic || "");
+        setBio(userProfile.bio || "");
       }
     };
     fetchProfile();
@@ -59,11 +61,11 @@ const ProfileScreen = () => {
       if (password) {
         await updatePassword(auth.currentUser, password);
       }
-
       await updateUserProfile(auth.currentUser.uid, {
         username,
         email,
         profile_pic: profilePic,
+        bio,
       });
 
       alert("Profile updated!");
@@ -122,19 +124,30 @@ const ProfileScreen = () => {
         placeholder="Enter new password"
       />
 
+      <Text style={styles.label}>Bio</Text>
+      <TextInput
+        style={[styles.input, { height: 80, textAlignVertical: "top" }]}
+        value={bio}
+        onChangeText={setBio}
+        multiline
+        placeholder="Tell us something about yourself..."
+      />
+
       <View style={styles.swipeWrapper}>
-                <SwipeButton
-                  thumbIconBackgroundColor="#5f636d"
-                  thumbIconBorderColor="#5f636d"
-                  railBackgroundColor="#add8e6"
-                  railFillBackgroundColor="#5f636d"
-                  railFillBorderColor="#5f636d"
-                  title="Save Changes"
-                  titleColor="#fff"
-                  onSwipeSuccess={handleSave}
-                  containerStyles={{ borderRadius: 25 }}
-                />
-              </View>
+        <SwipeButton
+          thumbIconBackgroundColor="#5f636d"
+          thumbIconBorderColor="#5f636d"
+          railBackgroundColor="#add8e6"
+          railFillBackgroundColor="#5f636d"
+          railFillBorderColor="#5f636d"
+          title="Save Changes"
+          titleColor="#fff"
+          onSwipeSuccess={handleSave}
+          containerStyles={{ borderRadius: 25 }}
+          width={300}
+
+        />
+      </View>
 
       <Text style={styles.label}>Mood History</Text>
       {profileData.moods && profileData.moods.length > 0 ? (
@@ -219,6 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#add8e6",
     borderRadius: 25,
     paddingVertical: 15,
+    
     alignItems: "center",
     justifyContent: "center",
   },
@@ -234,5 +248,6 @@ const styles = StyleSheet.create({
   },
   swipeWrapper: {
     marginTop: 30,
+    margin: "auto"
   },
 });
