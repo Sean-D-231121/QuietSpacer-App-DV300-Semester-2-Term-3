@@ -54,14 +54,14 @@
 * [Acknowledgements](#acknowledgements)
 
 ---
-
-## Project Description
+## About the Project
+### Project Description
 
 **QuietSpacer** is a mobile mindfulness application designed to help users reduce stress and increase calmness. It allows individuals to explore calming sounds, track moods, and engage in guided breathing exercises. The app is built with **React Native** and integrates Firebase for authentication and Firestore for storing user data such as moods, bookmarks, and reviews.  
 
 ---
 
-## Built With
+### Built With
 
 - **Frontend / Mobile**
   - [React Native](https://reactnative.dev/)
@@ -89,7 +89,7 @@
 ```sh
 npm install -g expo-cli
 ```
-###How to Install
+### How to Install
 1. **Clone the repository:**
 ```sh
 git clone https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3.git
@@ -137,19 +137,23 @@ npm start
 <p align="center">
  <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/SplashScreen.png" align="center" alt="splashscreen" width="20%" height="auto">
 </p>
+
 ### OnBoardingScreen
 - Introduces new users to the app features.
 - shows a series of tutorial slides or info pages.
-  <p align="center">
+
+<p align="center">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/OnboardingScreen.png" align="center" alt="Place-Details" width="20%" height="auto">
-    </p>
-## LoginScreen and Signup
+</p>
+    
+### LoginScreen and Signup
 - Handles user authentication and signup.
 - includes username email/password inputs and profile image for profile display.
 <p align="center">
   <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/SignUp.png" align="center" alt="Signup" width="20%" height="auto">
   <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Login.png" align="center" alt="Login" width="20%" height="auto">
 </p>
+
 ### HomeScreen
 - The main screen after login
 - Can look on map for nearby locations which have been marked as quiet and peaceful
@@ -160,12 +164,13 @@ npm start
   <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/View-place details.png" alt="View-place-details" width="20%" />
 </p>
 
- ### Dashboard
+### Dashboard
 - The main dashboard after login.
 - Likely displays summaries of user data, moods, or visited places.
 <p align="center">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Dashboard.png" align="center" alt="Dashboard" width="20%" height="auto">
 </p>
+
 ### BookmarkScreen
 - Shows places the user has bookmarked or favorited.
 - Each card includes details like place name, calm score and location
@@ -190,9 +195,9 @@ npm start
 </p>
 
 
-##Concept Process
+## Concept Process
 
-###Ideation
+### Ideation
 I was Given Three Inspiration Cards:
 - Reduce Stress
 - Geolocation
@@ -200,7 +205,7 @@ I was Given Three Inspiration Cards:
 
 I found it challenging to come up with an idea for this my intial idea was to capture sounds in the vicinity and come up with a playlist but thinking back it was too much so I decided to make an app which allows you to mark locations for people who want to relaxing area where they can just relax.
 
-###Wireframes
+### Wireframes
 <p align="center">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-SplashScreen.png" align="center" alt="SplashScreen" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-SignUp.png" align="center" alt="Signup" width="20%" height="auto">
@@ -210,9 +215,110 @@ I found it challenging to come up with an idea for this my intial idea was to ca
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-ProfileScreen.png" align="center" alt="ProfileScreen" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-BookmarkScreen.png" align="center" alt="BookmarkScreen" width="20%" height="auto">
 </p>
-###Style-Guide
+
+### Style-Guide
 <p align="center">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/logos" align="center" alt="Logos" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/colours.png" align="center" alt="ColourScheme" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/fonts.png" align="center" alt="Fonts" width="20%" height="auto">
 </p>
+
+## Development Process
+### Implementation process
+
+* **Frontend** (React-Native + TypeScript + Expo)
+
+  * Set up the react-native expo project.
+  * Implemented navigation using react-navigation.
+  * Implemented maps using react-native-maps.
+  * Implemented Tweening for maps and profile.
+  * Used expo-location to find my current location to search for nearby places.
+
+* **Backend** (Firebase Authentication + Firebase Cloud Database + Firebase Cloud Storage)
+
+  * Enabled Authentication of user through email and password and user creation
+    in AuthService.ts
+  * Able to store and add images to storage in firebase for others reference in
+    BucketService.ts
+  * Use CRUD Functionality to create, get, update and delete from database
+    through DbService.ts
+
+#### Highlights
+
+* Able to add place on map through a long press and store it in database
+* Dashboard which keeps track of moods in places
+* Reviews which can store calm score and calculate it
+* Using Swipe buttons instead of traditonal buttons.
+* UI was fun to implement and I felt the packages were easier use.
+* Onboarding screen was fun and was the easiest to implement.
+
+#### Challenges
+
+* Adding a place to database and getting the correct information.
+* HomeStack was annoying to implement with DrawerNavigation.
+* Struggled implementing SplashScreen.
+* Showing markers and getting them from database.
+* The different UI of android and Iphone.
+* native Keyboard conflicts.
+* Getting Firebase storage to work.
+
+### Future Implementation
+
+* **Gamification**: Introduce badges or rewards for discovering new quiet places or contributing reviews.
+* **Community Features**: Add a feed where users can share experiences, tips, or photos of quiet spots.
+* **Mood Journal Enhancements**: Expand tracking to include stress levels, focus, or productivity insights.
+* **Push Notifications**: Notify users about nearby quiet spots or reminders to take mindfulness breaks.
+* **Directions Support**: Provide direction support for safe travelling.
+* **Dark Mode / Theme Customization**: Give users the option to personalize the look and feel of the app.
+* 
+These are some future implementations which I believe will make it more interactive and fun to use for people who want to find.
+
+## Final Outcome
+
+### Mockups
+
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-1" align="center" alt="Logos" width="80%" height="auto">
+</p>
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-2" align="center" alt="Logos" width="80%" height="auto">
+</p>
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-3" align="center" alt="Logos" width="80%" height="auto">
+</p>
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-4" align="center" alt="Logos" width="80%" height="auto">
+</p>
+
+### Video Demonstration
+
+[View Demonstration]()
+
+## Conclusion
+
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+## Contact
+
+**Sean Dubbelman**  
+Email: [231121@virtualwindow.co.za](mailto:231121@virtualwindow.co.za)  
+GitHub: [@Sean](https://github.com/Sean-D-231121)
+
+
+## Acknowledgements
+* [Lecturer](https://github.com/Armand-OW)
+* **Figma** for wireframing
+* **Maps** for react-native-maps
+* **react-native-reanimate** for animations
+* **Firebase** for authentication, storage and CRUD functionality
+* **React-native** for app building
+* **expo** for development / runtime and some native functions
+* [YouTube](https://www.youtube.com/)
+
+
+
