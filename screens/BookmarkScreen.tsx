@@ -1,4 +1,3 @@
-// screens/Bookmarks.js
 import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
@@ -13,16 +12,19 @@ import SwipeButton from "rn-swipe-button";
 import {
   getBookmarksFromFirestore,
   removeBookmarkFromFirestore,
+  getReviewsForPlace, // 👈 add this
 } from "../services/DbService";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Location from "expo-location";
+import { Feather } from "@expo/vector-icons"; // 👈 for calm feather icon
 
 type RootStackParamList = {
   Home: { animateTo: { latitude: number; longitude: number } };
 };
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+
 const getAddressFromCoords = async (lat: number, long: number) => {
   try {
     const geocode = await Location.reverseGeocodeAsync({
@@ -45,17 +47,27 @@ const Bookmarks = () => {
 
   const fetchBookmarks = async () => {
     const bookmarks = await getBookmarksFromFirestore();
-    const getLocation = await Promise.all(
+
+    const enriched = await Promise.all(
       bookmarks.map(async (p) => {
+        let location = "";
         if (p.lat && p.long) {
-          const address = await getAddressFromCoords(p.lat, p.long);
-          return { ...p, location: address };
+          location = await getAddressFromCoords(p.lat, p.long);
         }
-        return p;
+
+        // 👇 fetch reviews & calculate calm score
+        let calmScore: number | null = null;
+        const reviews = await getReviewsForPlace(p.id);
+        if (reviews && reviews.length > 0) {
+          const total = reviews.reduce((sum, r) => sum + r.calm_score, 0);
+          calmScore = parseFloat((total / reviews.length).toFixed(1));
+        }
+
+        return { ...p, location, calmScore };
       })
     );
 
-    setPlaces(getLocation);
+    setPlaces(enriched);
   };
 
   useFocusEffect(
@@ -91,6 +103,16 @@ const Bookmarks = () => {
             <Text style={styles.cardLocation}>
               📍 {place.location || place.category_name}
             </Text>
+
+            {place.calmScore !== null ? (
+              <Text style={styles.calmScore}>
+                Calm Score: {place.calmScore}{" "}
+                <Feather name="feather" size={14} color="gray" />
+              </Text>
+            ) : (
+              <Text style={styles.notReviewed}>Not reviewed yet</Text>
+            )}
+
             <View style={{ width: "100%", marginVertical: 10 }}>
               <SwipeButton
                 thumbIconBackgroundColor="#5f636d"
@@ -130,6 +152,7 @@ const Bookmarks = () => {
 };
 
 export default Bookmarks;
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff8e7",
@@ -139,12 +162,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
-  },
-  menuIcon: {
-    backgroundColor: "#F28B82",
-    padding: 10,
-    borderRadius: 10,
-    marginRight: 10,
   },
   title: {
     fontSize: 22,
@@ -175,15 +192,16 @@ const styles = StyleSheet.create({
     color: "#555",
     marginBottom: 10,
   },
-  goButton: {
-    backgroundColor: "#a2dbe6",
-    paddingVertical: 10,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    alignSelf: "flex-start",
-  },
-  goText: {
+  calmScore: {
+    fontSize: 14,
     color: "#333",
-    fontWeight: "bold",
+    marginBottom: 10,
+    fontWeight: "600",
+  },
+  notReviewed: {
+    fontSize: 14,
+    color: "#777",
+    fontStyle: "italic",
+    marginBottom: 10,
   },
 });

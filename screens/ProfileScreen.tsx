@@ -12,6 +12,7 @@ import * as ImagePicker from "expo-image-picker";
 import { getUserProfile, updateUserProfile } from "../services/DbService";
 import { auth } from "../firebase";
 import { updateEmail, updatePassword } from "firebase/auth";
+import SwipeButton from "rn-swipe-button";
 
 const ProfileScreen = () => {
   const [profileData, setProfileData] = useState<any>(null);
@@ -51,17 +52,14 @@ const ProfileScreen = () => {
     if (!auth.currentUser) return;
 
     try {
-      // update auth email
       if (email && email !== auth.currentUser.email) {
         await updateEmail(auth.currentUser, email);
       }
 
-      // update auth password
       if (password) {
         await updatePassword(auth.currentUser, password);
       }
 
-      // update Firestore doc
       await updateUserProfile(auth.currentUser.uid, {
         username,
         email,
@@ -124,9 +122,19 @@ const ProfileScreen = () => {
         placeholder="Enter new password"
       />
 
-      <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-        <Text style={styles.saveBtnText}>Save Changes</Text>
-      </TouchableOpacity>
+      <View style={styles.swipeWrapper}>
+                <SwipeButton
+                  thumbIconBackgroundColor="#5f636d"
+                  thumbIconBorderColor="#5f636d"
+                  railBackgroundColor="#add8e6"
+                  railFillBackgroundColor="#5f636d"
+                  railFillBorderColor="#5f636d"
+                  title="Save Changes"
+                  titleColor="#fff"
+                  onSwipeSuccess={handleSave}
+                  containerStyles={{ borderRadius: 25 }}
+                />
+              </View>
 
       <Text style={styles.label}>Mood History</Text>
       {profileData.moods && profileData.moods.length > 0 ? (
@@ -205,5 +213,26 @@ const styles = StyleSheet.create({
     textAlign: "right",
     fontSize: 12,
     color: "#555",
+  },
+  swipeButton: {
+    marginTop: 30,
+    backgroundColor: "#add8e6",
+    borderRadius: 25,
+    paddingVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  swipeThumb: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  swipeText: {
+    fontSize: 16,
+    color: "#5f636d",
+    fontWeight: "bold",
+  },
+  swipeWrapper: {
+    marginTop: 30,
   },
 });

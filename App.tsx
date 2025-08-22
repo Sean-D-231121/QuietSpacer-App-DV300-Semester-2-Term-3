@@ -53,7 +53,29 @@ function HomeStack() {
 
 function DrawerNavigator() {
   return (
-    <Drawer.Navigator initialRouteName="Home">
+    <Drawer.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: "#a6dce5", 
+        },
+        headerTintColor: "#5f636d", 
+        headerTitleStyle: {
+          fontWeight: "bold",
+        },
+        drawerStyle: {
+          backgroundColor: "#FAF5E6", 
+        },
+        drawerActiveTintColor: "#5f636d",
+        drawerInactiveTintColor: "#000",
+        drawerActiveBackgroundColor: "#a6dce5", 
+        drawerInactiveBackgroundColor: "#a6dce5aa", 
+        drawerItemStyle: {
+          marginVertical: 10,
+          borderRadius: 10, 
+        },
+      }}
+    >
       <Drawer.Screen name="Home" component={HomeStack} />
       <Drawer.Screen name="Bookmarks" component={Bookmarks} />
       <Drawer.Screen name="Profile" component={Profile} />
@@ -62,6 +84,7 @@ function DrawerNavigator() {
     </Drawer.Navigator>
   );
 }
+
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

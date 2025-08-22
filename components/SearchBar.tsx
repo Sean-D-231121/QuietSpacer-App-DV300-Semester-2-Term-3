@@ -32,10 +32,9 @@ const SearchBar = ({
         value={search}
         onChangeText={setSearch}
         returnKeyType="search"
+        onSubmitEditing={handleSearch} 
+        blurOnSubmit={true} 
       />
-      <TouchableOpacity style={styles.button} onPress={handleSearch}>
-        <Feather name="search" size={20} color="#fff" />
-      </TouchableOpacity>
     </Animated.View>
   );
 };

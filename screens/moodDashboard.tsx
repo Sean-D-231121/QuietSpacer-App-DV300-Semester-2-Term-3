@@ -119,61 +119,74 @@ const MoodDashboard = () => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Mood Streak */}
-      {moodStreak ? (
+      {/* Streak + Happiest Place */}
+      {(moodStreak || happiestPlace) && (
         <View style={styles.card}>
-          <Text style={styles.streakText}>{moodStreak}</Text>
-        </View>
-      ) : null}
-
-      {/* Happiest Place */}
-      <View style={styles.card}>
-        <Text style={styles.happiestText}>
-          Happiest Place this week:{"\n"}
-          <Text style={styles.happiestPlace}>{happiestPlace}</Text>
-        </Text>
-      </View>
-
-      {/* Mood Progress Bars */}
-      <Text style={styles.header}>Your Mood Dashboard</Text>
-      {moodOptions.map((mood) => {
-        const value = moodCounts[mood.key] || 0;
-        const progress = totalMoods > 0 ? value / totalMoods : 0;
-        return (
-          <View key={mood.key} style={styles.moodRow}>
-            <Text style={styles.moodText}>
-              {mood.label}: {value}
-            </Text>
-            <Progress.Bar
-              progress={progress}
-              width={250}
-              height={14}
-              borderRadius={20}
-              color="#a6dce5"
-              unfilledColor="#f1f1f1"
-              borderWidth={0}
-              style={{ marginTop: 5 }}
-            />
-          </View>
-        );
-      })}
-
-      {/* Mood–Place Correlation */}
-      <Text style={styles.header}>Mood–Place Correlation</Text>
-      {moodPlaceCorrelation.map((item, idx) => (
-        <View key={idx} style={styles.card}>
-          <Text style={styles.correlationText}>
-            {item.mood} → {item.place} ({item.count} times)
+          {moodStreak ? (
+            <Text style={styles.streakText}>{moodStreak}</Text>
+          ) : null}
+          <Text style={[styles.happiestText, { marginTop: 10 }]}>
+            Happiest Place this week:{"\n"}
+            <Text style={styles.happiestPlace}>{happiestPlace}</Text>
           </Text>
         </View>
-      ))}
+      )}
+
+      {/* Mood Dashboard */}
+      <View style={styles.card}>
+        <Text style={styles.header}>Your Mood Dashboard</Text>
+        {moodOptions.map((mood) => {
+          const value = moodCounts[mood.key] || 0;
+          const progress = totalMoods > 0 ? value / totalMoods : 0;
+          return (
+            <View key={mood.key} style={styles.moodRow}>
+              <Text style={styles.moodText}>
+                {mood.label}: {value}
+              </Text>
+              <Progress.Bar
+                progress={progress}
+                width={250}
+                height={14}
+                borderRadius={20}
+                color="#2e4057"
+                unfilledColor="#f1f1f1"
+                borderWidth={0}
+                style={{ marginTop: 5 }}
+              />
+            </View>
+          );
+        })}
+      </View>
+
+      {/* Mood–Place Correlation */}
+      <View style={styles.card}>
+        <Text style={styles.header}>Mood–Place Correlation</Text>
+        {moodPlaceCorrelation.map((item, idx) => (
+          <Text key={idx} style={styles.correlationText}>
+            {item.mood} → {item.place} ({item.count} times)
+          </Text>
+        ))}
+      </View>
     </ScrollView>
   );
+
 };
 
 export default MoodDashboard;
 
 const styles = StyleSheet.create({
+  card: {
+    marginVertical: 12,
+    padding: 18,
+    borderRadius: 25,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+    backgroundColor: "#a6dce5", // pastel blue like inputs
+    alignItems: "center",
+  },
+
   container: {
     flex: 1,
     padding: 20,
@@ -194,13 +207,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 5,
     color: "#333",
-  },
-  card: {
-    marginVertical: 10,
-    padding: 15,
-    borderRadius: 25,
-    backgroundColor: "#a6dce5", // pastel blue like inputs
-    alignItems: "center",
   },
   happiestText: {
     fontSize: 15,

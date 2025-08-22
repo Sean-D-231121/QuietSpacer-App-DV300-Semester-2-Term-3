@@ -9,7 +9,7 @@ export const uploadProfileImage = async (uri: string, userId: string) => {
     const response = await fetch(uri);
     const blob = await response.blob();
 
-    // ✅ Put inside user folder
+    //  Put inside user folder
     const storageRef = ref(storage, `profilePics/${userId}/avatar.jpg`);
 
     await uploadBytes(storageRef, blob);

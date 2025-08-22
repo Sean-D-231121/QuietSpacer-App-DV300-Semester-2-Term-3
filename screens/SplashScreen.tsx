@@ -5,7 +5,7 @@ export default function SplashScreenComponent() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../assets/logo.png")} // <- replace with your logo path
+        source={require("../assets/logo.png")} 
         style={styles.logo}
       />
       <Text style={styles.title}>QuietSpacer</Text>

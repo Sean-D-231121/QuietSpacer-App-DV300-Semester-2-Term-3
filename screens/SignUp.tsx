@@ -51,7 +51,7 @@ const pickImage = async () => {
         </Text>
       </View>
 
-      {/* Profile Image Picker Placeholder */}
+      
       <TouchableOpacity onPress={pickImage} style={SignUpstyles.avatar}>
         {image ? (
           <Image
@@ -63,7 +63,7 @@ const pickImage = async () => {
         )}
       </TouchableOpacity>
 
-      {/* Input Fields */}
+      
       <View style={SignUpstyles.form}>
         <Text style={SignUpstyles.label}>Username</Text>
         <TextInput
@@ -96,7 +96,6 @@ const pickImage = async () => {
           onChangeText={setCheckPassword}
         />
 
-        {/* Swipe Button */}
         <View style={SignUpstyles.swipeWrapper}>
           <SwipeButton
             thumbIconBackgroundColor="#5f636d"

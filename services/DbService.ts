@@ -80,7 +80,7 @@ export const addPlaceToFirestore = async ({
         const placeDocRef = doc(db, "places", docRef.id);
         await updateDoc(placeDocRef, { image_url: downloadURL });
       } else {
-        console.warn("⚠️ No downloadURL returned from uploadPlaceImage");
+        console.warn("No downloadURL returned from uploadPlaceImage");
       }
     }
 
@@ -189,7 +189,7 @@ export const getUserProfile = async (
   userId: string
 ): Promise<UserProfile | null> => {
   try {
-    console.log("Fetching user profile for UID:", userId);
+    
     const docRef = doc(db, "users", userId);
     const docSnap = await getDoc(docRef);
 
@@ -243,7 +243,6 @@ export const addReviewToFirestore = async ({
     const score = Math.max(1, Math.min(5, calm_score));
     const user_id = auth.currentUser ? auth.currentUser.uid : "anonymous";
 
-    // 🔹 Get the user profile
     const userProfile = await getUserProfile(user_id);
 
     const colRef = collection(db, "reviews");

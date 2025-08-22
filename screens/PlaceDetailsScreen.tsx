@@ -17,7 +17,7 @@ import {
   getReviewsForPlace,
   Review,
 } from "../services/DbService";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import SwipeButton from "rn-swipe-button";
 import * as Location from "expo-location"; // 👈 NEW
@@ -25,24 +25,28 @@ import { Dropdown } from "react-native-element-dropdown";
 
 type RootStackParamList = {
   Homescreen: { animateTo: { latitude: number; longitude: number } };
+  PlaceDetails: { marker: any};
 };
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Homescreen"
 >;
+type PlaceDetailsRouteProp = RouteProp<RootStackParamList, "PlaceDetails">;
+
+
 
 const PlaceDetails = () => {
-  const route = useRoute();
+  const route = useRoute<PlaceDetailsRouteProp>();
   const navigation = useNavigation<NavigationProp>();
   const marker: any = route.params?.marker;
-
+  
   const [bookmarked, setBookmarked] = useState(false);
-  const [address, setAddress] = useState<string>(""); // 👈 NEW
+  const [address, setAddress] = useState<string>(""); 
 
   const [reviewTitle, setReviewTitle] = useState("");
   const [reviewDesc, setReviewDesc] = useState("");
-  const [reviewScore, setReviewScore] = useState("1"); // default 3
+  const [reviewScore, setReviewScore] = useState("1"); 
   const [overallCalmScore, setOverallCalmScore] = useState<number | null>(null);
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -247,9 +251,19 @@ const PlaceDetails = () => {
           value={reviewScore}
           onChange={(item) => setReviewScore(item.value)}
         />
-        <TouchableOpacity style={styles.addButton} onPress={handleAddReview}>
-          <Text style={styles.addButtonText}>Add Review</Text>
-        </TouchableOpacity>
+        <View style={styles.swipeWrapper}>
+          <SwipeButton
+            thumbIconBackgroundColor="#5f636d"
+            thumbIconBorderColor="#5f636d"
+            railBackgroundColor="#add8e6"
+            railFillBackgroundColor="#5f636d"
+            railFillBorderColor="#5f636d"
+            title="Add Review"
+            titleColor="#fff"
+            onSwipeSuccess={handleAddReview}
+            containerStyles={{ borderRadius: 25 }}
+          />
+        </View>
       </View>
 
       <Text style={styles.reviewHeader}>Reviews</Text>
@@ -315,7 +329,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 10,
-    
   },
   iconRow: {
     flexDirection: "row",
@@ -412,7 +425,7 @@ const styles = StyleSheet.create({
   reviewForm: {
     marginHorizontal: 20,
     marginTop: 15,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#fca5a5",
     padding: 15,
     borderRadius: 15,
   },
@@ -433,5 +446,26 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  swipeButton: {
+    marginTop: 30,
+    backgroundColor: "#add8e6",
+    borderRadius: 25,
+    paddingVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  swipeThumb: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  swipeText: {
+    fontSize: 16,
+    color: "#5f636d",
+    fontWeight: "bold",
+  },
+  swipeWrapper: {
+    marginTop: 30,
   },
 });
