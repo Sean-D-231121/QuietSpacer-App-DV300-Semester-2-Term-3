@@ -10,7 +10,7 @@
 
 
 <h3 align="center">QuietSpacer</h3>
-<h5 align="center">A Calmness & Mindfulness Mobile Application</h5>
+<h5 align="center">A Mobile Application to find quiet spots</h5>
 </br>
 <p align="center">
   <a href="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3">
@@ -193,9 +193,12 @@ npm start
 ##Concept Process
 
 ###Ideation
-- Identified the need for a digital calm space in stressful environments.
-- Focused on minimal UI design with intuitive gestures to avoid clutter.
-- Emphasis on location-based discovery and personal reflection.
+I was Given Three Inspiration Cards:
+- Reduce Stress
+- Geolocation
+- No traditional buttons
+
+I found it challenging to come up with an idea for this my intial idea was to capture sounds in the vicinity and come up with a playlist but thinking back it was too much so I decided to make an app which allows you to mark locations for people who want to relaxing area where they can just relax.
 
 ###Wireframes
 <p align="center">
@@ -206,4 +209,10 @@ npm start
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-Add-Place.png" align="center" alt="Add-place" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-ProfileScreen.png" align="center" alt="ProfileScreen" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-BookmarkScreen.png" align="center" alt="BookmarkScreen" width="20%" height="auto">
+</p>
+###Style-Guide
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/logos" align="center" alt="Logos" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/colours.png" align="center" alt="ColourScheme" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/fonts.png" align="center" alt="Fonts" width="20%" height="auto">
 </p>
