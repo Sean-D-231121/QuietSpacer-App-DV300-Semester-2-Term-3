@@ -1,4 +1,4 @@
-<!-- Repository Information & Links -->
+
 <br />
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3)
@@ -8,7 +8,7 @@
 ![GitHub Language](https://img.shields.io/github/languages/top/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3)
 ![GitHub Downloads](https://img.shields.io/github/downloads/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/total)
 
-<!-- HEADER SECTION -->
+
 <h3 align="center">QuietSpacer</h3>
 <h5 align="center">A Calmness & Mindfulness Mobile Application</h5>
 </br>
@@ -39,7 +39,7 @@
 * [Concept Process](#concept-process)
   * [Ideation](#ideation)
   * [Wireframes](#wireframes)
-  * [Custom UI](#custom-ui)
+  * [style guide](#style-guide)
 * [Development Process](#development-process)
   * [Implementation Process](#implementation-process)
     * [Highlights](#highlights)
@@ -51,7 +51,6 @@
 * [Conclusion](#conclusion)
 * [License](#license)
 * [Contact](#contact)
-* [Responsibilities](#responsibilities)
 * [Acknowledgements](#acknowledgements)
 
 ---
@@ -133,41 +132,78 @@ npm start
 
 ## Features and Functionality
 
-  <img src="assets/Splashscreen.png" align="center" alt="splashscreen" width="80%" height="auto">
-
 ### SplashScreen
 - Displays app logo while app resources load.
-
+<p align="center">
+ <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/SplashScreen.png" align="center" alt="splashscreen" width="20%" height="auto">
+</p>
 ### OnBoardingScreen
 - Introduces new users to the app features.
 - shows a series of tutorial slides or info pages.
-
+  <p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/OnboardingScreen.png" align="center" alt="Place-Details" width="20%" height="auto">
+    </p>
 ## LoginScreen and Signup
 - Handles user authentication and signup.
 - includes username email/password inputs and profile image for profile display.
-
+<p align="center">
+  <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/SignUp.png" align="center" alt="Signup" width="20%" height="auto">
+  <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Login.png" align="center" alt="Login" width="20%" height="auto">
+</p>
 ### HomeScreen
 - The main screen after login
 - Can look on map for nearby locations which have been marked as quiet and peaceful
 - Add new places which you yourself find calming and might want to recommend to others
+<p align="center">
+  <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/HomeScreen.png" alt="Homescreen" width="20%" />
+  <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Add-place.png" alt="Add-place" width="20%" />
+  <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/View-place details.png" alt="View-place-details" width="20%" />
+</p>
 
  ### Dashboard
 - The main dashboard after login.
 - Likely displays summaries of user data, moods, or visited places.
-
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Dashboard.png" align="center" alt="Dashboard" width="20%" height="auto">
+</p>
 ### BookmarkScreen
 - Shows places the user has bookmarked or favorited.
 - Each card includes details like place name, calm score and location
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/BookmarkScreen.png" align="center" alt="BookmarkScreen" width="20%" height="auto">
+</p>
 
 ### PlaceDetailsScreen
 - Displays detailed information for a specific place.
 - Can bookmark the place for if wanting to be found later
 - Add and view other user reviews
 - look at calm score
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Place-Details.png" align="center" alt="Place-Details" width="20%" height="auto">
+</p>
 
 ### ProfileScreen
 - User profile management.
 - Look at recently entered moods
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/ProfileScreen.png" align="center" alt="ProfileScreen" width="20%" height="auto">
+</p>
 
 
+##Concept Process
 
+###Ideation
+- Identified the need for a digital calm space in stressful environments.
+- Focused on minimal UI design with intuitive gestures to avoid clutter.
+- Emphasis on location-based discovery and personal reflection.
+
+###Wireframes
+<p align="center">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-SplashScreen.png" align="center" alt="SplashScreen" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-SignUp.png" align="center" alt="Signup" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-HomeScreen.png" align="center" alt="HomeScreen" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-PlaceDetails.png" align="center" alt="PlaceDetails" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-Add-Place.png" align="center" alt="Add-place" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-ProfileScreen.png" align="center" alt="ProfileScreen" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-BookmarkScreen.png" align="center" alt="BookmarkScreen" width="20%" height="auto">
+</p>
