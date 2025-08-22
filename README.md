@@ -57,7 +57,7 @@
 ## About the Project
 ### Project Description
 
-**QuietSpacer** is a mobile mindfulness application designed to help users reduce stress and increase calmness. It allows individuals to explore calming sounds, track moods, and engage in guided breathing exercises. The app is built with **React Native** and integrates Firebase for authentication and Firestore for storing user data such as moods, bookmarks, and reviews.  
+**QuietSpacer** is a mobile geolocation mindfulness application designed to help users reduce stress and increase calmness by finding suitable places to rest. It allows individuals to explore new quiet spots and track moods. The app is built with **React Native** and integrates Firebase for authentication and Firestore for storing user data such as moods, bookmarks, and reviews.  
 
 ---
 
@@ -208,7 +208,7 @@ I found it challenging to come up with an idea for this my intial idea was to ca
 ### Wireframes
 <p align="center">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-SplashScreen.png" align="center" alt="SplashScreen" width="20%" height="auto">
-<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-SignUp.png" align="center" alt="Signup" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-Signup.png" align="center" alt="Signup" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-HomeScreen.png" align="center" alt="HomeScreen" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-PlaceDetails.png" align="center" alt="PlaceDetails" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Wireframe-Add-Place.png" align="center" alt="Add-place" width="20%" height="auto">
@@ -218,7 +218,7 @@ I found it challenging to come up with an idea for this my intial idea was to ca
 
 ### Style-Guide
 <p align="center">
-<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/logos" align="center" alt="Logos" width="20%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/logos.png" align="center" alt="Logos" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/colours.png" align="center" alt="ColourScheme" width="20%" height="auto">
 <img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/fonts.png" align="center" alt="Fonts" width="20%" height="auto">
 </p>
@@ -278,16 +278,16 @@ These are some future implementations which I believe will make it more interact
 ### Mockups
 
 <p align="center">
-<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-1" align="center" alt="Logos" width="80%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-1.png" align="center" alt="Mockup-1" width="80%" height="auto">
 </p>
 <p align="center">
-<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-2" align="center" alt="Logos" width="80%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-2.png" align="center" alt="Mockup-2" width="80%" height="auto">
 </p>
 <p align="center">
-<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-3" align="center" alt="Logos" width="80%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-3.png" align="center" alt="Mockup-3" width="80%" height="auto">
 </p>
 <p align="center">
-<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-4" align="center" alt="Logos" width="80%" height="auto">
+<img src="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/blob/main/assets/Mockup-4.png" align="center" alt="Mockup-4" width="80%" height="auto">
 </p>
 
 ### Video Demonstration
@@ -295,6 +295,8 @@ These are some future implementations which I believe will make it more interact
 [View Demonstration]()
 
 ## Conclusion
+
+QuietSpacer successfully combines geolocation, mindfulness, and community-driven features to help users discover peaceful spaces and track their moods. Built with React Native and Firebase, it offers a simple yet engaging way to reduce stress. With future enhancements, it has strong potential to grow into a valuable wellness tool.
 
 
 ## License
