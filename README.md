@@ -270,7 +270,7 @@ I found it challenging to come up with an idea for this my intial idea was to ca
 * **Push Notifications**: Notify users about nearby quiet spots or reminders to take mindfulness breaks.
 * **Directions Support**: Provide direction support for safe travelling.
 * **Dark Mode / Theme Customization**: Give users the option to personalize the look and feel of the app.
-* 
+  
 These are some future implementations which I believe will make it more interactive and fun to use for people who want to find.
 
 ## Final Outcome
