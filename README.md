@@ -18,7 +18,7 @@
   </a>
   <br />
   <br />
-  <a href="https://drive.google.com/file/d/1rW7ZWpmjM3x7iSRn6ewZE2RgiZ7SC3zH/view?usp=sharing">View Demo</a>
+  <a href="https://drive.google.com/file/d/1LRTUwpHxL8DWumCXf2UV_ffwz2zuRANL/view?usp=drive_link">View Demo</a>
   ·
   <a href="https://github.com/Sean-D-231121/QuietSpacer-App-DV300-Semester-2-Term-3/issues">Report Bug</a>
   ·
@@ -292,7 +292,7 @@ These are some future implementations which I believe will make it more interact
 
 ### Video Demonstration
 
-[View Demonstration](https://drive.google.com/file/d/1rW7ZWpmjM3x7iSRn6ewZE2RgiZ7SC3zH/view?usp=sharing)
+[View Demonstration](https://drive.google.com/file/d/1LRTUwpHxL8DWumCXf2UV_ffwz2zuRANL/view?usp=drive_link)
 
 ## Conclusion
 
